@@ -10,7 +10,7 @@ import ProgressPage from "./pages/ProgressPage";
 import DirectoryPage from "./pages/DirectoryPage";
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(true); // 로그인 여부 상태
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 여부 상태
 
   return (
     <Router>
