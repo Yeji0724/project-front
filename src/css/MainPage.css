@@ -45,7 +45,7 @@ html, body {
 .project-title {
   margin: 0 0 40px 0;
   font-size: 2.5rem;
-  font-weight: 900; /* ✅ 진하게 */
+  font-weight: 900; /* 진하게 */
   color: #007bff;
   letter-spacing: 0.5px;
   text-align: center;
@@ -126,7 +126,7 @@ html, body {
   bottom: 20px;
   transform: translateX(-50%);
   font-size: 30px;
-  color: rgba(255,255,255,.9);
+  color: rgba(255, 255, 255, 0.973);
   text-shadow: 0 0 8px rgba(0,0,0,.25);
   animation: hint 1.8s ease-in-out infinite;
   cursor: pointer;

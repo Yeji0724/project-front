@@ -54,6 +54,8 @@ function MainPage() {
 
         {/* 클릭 이벤트 */}
         <div className="scroll-hint" onClick={scrollToFeatures}>
+          주요 기능
+          <br />
           ▼
         </div>
       </section>
@@ -92,7 +94,7 @@ function MainPage() {
             <p>업로드 후 변환 진행률과 처리 상태를 실시간으로 확인할 수 있습니다</p>
           </div>
         </div>
-        
+
         {/* 구분선 + 이용 방법 안내 */}
         <hr className="divider" />
         <div className="howto-inline">
