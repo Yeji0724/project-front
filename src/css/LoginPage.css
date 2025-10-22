@@ -60,3 +60,51 @@
 .join-link a:hover {
   text-decoration: underline;
 }
+
+/* 로그인 성공 토스트 */
+.login-toast-popup {
+  border-radius: 8px !important;
+  padding: 8px 18px !important;
+  width: auto !important;
+  background: rgba(75, 107, 251, 0.95) !important;
+  color: #fff !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+  animation: toast-fade 0.2s ease;
+}
+
+.login-toast-title {
+  font-weight: 600 !important;
+  font-size: 0.95rem !important;
+  color: #fff !important;
+  margin: 0 !important;
+}
+
+/* 로그인 실패 토스트 (같은 파란색 계열) */
+.login-fail-toast {
+  border-radius: 8px !important;
+  padding: 8px 18px !important;
+  width: auto !important;
+  background: rgba(255, 70, 70, 0.9) !important;
+  color: #fff !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+  animation: toast-fade 0.2s ease;
+}
+
+.login-fail-toast-title {
+  font-weight: 600 !important;
+  font-size: 0.9rem !important;
+  color: #fff !important;
+  margin: 0 !important;
+}
+
+/* 애니메이션 */
+@keyframes toast-fade {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

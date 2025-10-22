@@ -1,6 +1,9 @@
 # project-front
 
-# 1. npm install 
+# 1-1 
+npm install 
+npm install axios
+npm install SweetAlert2
 
 # 2.
 

@@ -1,23 +1,66 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import Swal from "sweetalert2";
 import "../css/LoginPage.css";
 
 function LoginPage({ setIsLoggedIn }) {
   const navigate = useNavigate();
-  const [error, setError] = useState("");
+  const [form, setForm] = useState({ id: "", password: "" });
 
-  const handleLogin = (e) => {
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    // 테스트용: 로그인 성공(true) / 실패(false) 수동 설정
-    const TEST_SUCCESS = true; // true로 바꾸면 로그인 성공, false면 실패
+    try {
+      const res = await axios.post("http://localhost:8000/auth/login", {
+        user_login_id: form.id,
+        password: form.password,
+      });
 
-    if (TEST_SUCCESS) {
+      // 로그인 성공 — 위에 작게 파란 토스트
+      localStorage.setItem("token", res.data.token);
       setIsLoggedIn(true);
-      navigate("/upload");
-    } else {
+
+      const Toast = Swal.mixin({
+        toast: true,
+        position: "top",
+        showConfirmButton: false,
+        timer: 1000,
+        timerProgressBar: false,
+        customClass: {
+          popup: "login-toast-popup",
+          title: "login-toast-title",
+        },
+      });
+
+      Toast.fire({ title: "로그인 성공!" });
+
+      setTimeout(() => navigate("/upload"), 800);
+    } catch (err) {
+      console.error("로그인 실패:", err.response?.data || err.message);
       setIsLoggedIn(false);
-      setError("없는 아이디 또는 잘못된 비밀번호입니다.");
+
+      // 로그인 실패 — 위에 작게 파란색 토스트 (성공과 같은 스타일)
+      const FailToast = Swal.mixin({
+        toast: true,
+        position: "top",
+        showConfirmButton: false,
+        timer: 1200,
+        timerProgressBar: false,
+        customClass: {
+          popup: "login-fail-toast",
+          title: "login-fail-toast-title",
+        },
+      });
+
+      FailToast.fire({
+        icon: "error",
+        title: "로그인 실패! 아이디 또는 비밀번호를 확인해주세요.",
+      });
     }
   };
 
@@ -25,11 +68,29 @@ function LoginPage({ setIsLoggedIn }) {
     <div className="login-container">
       <h2 className="login-title">로그인</h2>
       <form className="login-form" onSubmit={handleLogin}>
-        <input type="text" placeholder="아이디" className="login-input" required />
-        <input type="password" placeholder="비밀번호" className="login-input" required />
-        <button type="submit" className="login-btn">로그인</button>
+        <input
+          type="text"
+          name="id"
+          placeholder="아이디"
+          className="login-input"
+          value={form.id}
+          onChange={handleChange}
+          required
+        />
+        <input
+          type="password"
+          name="password"
+          placeholder="비밀번호"
+          className="login-input"
+          value={form.password}
+          onChange={handleChange}
+          required
+        />
+        <button type="submit" className="login-btn">
+          로그인
+        </button>
       </form>
-      {error && <p className="error-message">{error}</p>} {/* 로그인 실패 시 메시지 */}
+
       <p className="join-link">
         계정이 없으신가요? <Link to="/join">회원가입</Link>
       </p>
