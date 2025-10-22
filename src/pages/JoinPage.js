@@ -90,7 +90,7 @@ function JoinPage() {
         toast: true,
         position: "top",
         icon: "success",
-        title: `회원가입 완료! 환영합니다, ${form.user_login_id}님 💙`,
+        title: `회원가입 완료! 환영합니다, ${form.user_login_id}님`,
         showConfirmButton: false,
         timer: 1500,
         timerProgressBar: false,

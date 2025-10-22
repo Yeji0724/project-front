@@ -1,5 +1,6 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 import "../css/Header.css";
 
 const Header = ({ isLoggedIn, setIsLoggedIn }) => {
@@ -7,6 +8,23 @@ const Header = ({ isLoggedIn, setIsLoggedIn }) => {
 
   const handleLogout = () => {
     setIsLoggedIn(false);
+
+    // 작게, 위쪽에 자동으로 사라지는 로그아웃 알림
+    const Toast = Swal.mixin({
+      toast: true,
+      position: "top",
+      icon: "info",
+      title: "로그아웃 되었습니다.",
+      showConfirmButton: false,
+      timer: 1000,
+      timerProgressBar: false,
+      customClass: {
+        popup: "logout-toast-popup",
+        title: "logout-toast-title",
+      },
+    });
+    Toast.fire();
+
     navigate("/"); // 로그아웃 시 메인화면으로 이동
   };
 
