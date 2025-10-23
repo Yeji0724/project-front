@@ -16,6 +16,10 @@ useState(true) <- 로그인
 false일 경우 비로그인
 <img width="1864" height="942" alt="image" src="https://github.com/user-attachments/assets/caeefcbb-0dfa-4a01-a4ae-daee1ee89e46" />
 
+하단 주요기능 화살표 누르면, 주요 기능 설명과 이용 방법 나와 있음.
+<img width="1407" height="932" alt="image" src="https://github.com/user-attachments/assets/82e5d655-29f6-4a25-9d96-69c11ff5a037" />
+
+
 
 회원가입
 
