@@ -12,18 +12,21 @@ npm install SweetAlert2
 !! App.js 코드에 13번째 줄.
 useState(true) <- 로그인 
 false일 경우 비로그인
-<img width="1021" height="794" alt="image" src="https://github.com/user-attachments/assets/00ccaaa7-2642-4baf-a757-43fd52be51d9" />
+<img width="1864" height="942" alt="image" src="https://github.com/user-attachments/assets/caeefcbb-0dfa-4a01-a4ae-daee1ee89e46" />
+
 
 회원가입
 
 회원가입 버튼 누르면 회원가입 되어 로그인 화면으로 넘어가게 해둠.
-<img width="1018" height="793" alt="image" src="https://github.com/user-attachments/assets/089272d9-682a-4a61-8ded-e00c5ee017ed" />
+<img width="1035" height="824" alt="image" src="https://github.com/user-attachments/assets/dc6b0c82-78e1-4bc3-a3bf-024950c8daad" />
+
 
 로그인
 
 우선 로그인 버튼 누르면 로그인이 되어 업로드 화면으로 넘어가게 해둠.
-LoginPage.js 코드 13번째줄 true를 false로 바꾸면 로그인 안됨.
-<img width="1021" height="795" alt="image" src="https://github.com/user-attachments/assets/ebb628f3-df4e-4357-a6de-86267b2c0286" />
+
+<img width="789" height="769" alt="image" src="https://github.com/user-attachments/assets/306272a6-a9d7-4bd8-87b2-93bb6f70c2e9" />
+
 
 # 3. 로그인 후
 
