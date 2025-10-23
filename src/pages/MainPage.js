@@ -67,6 +67,8 @@ function MainPage() {
           window.scrollTo({ top: 0, behavior: "smooth" });
         }}>
           ▲
+          <br />
+          돌아가기
         </div>
         <h2 className="features-title">주요 기능 소개</h2>
         <div className="features-grid">

@@ -5,14 +5,21 @@
 /* ============================= */
 /* 기본 설정 */
 /* ============================= */
+/* 메인 페이지 전용으로만 스크롤 설정 */
+html:has(.main-container),
+body:has(.main-container) {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* 기본 설정 (공통 스타일만 남김) */
 html, body {
   margin: 0;
   padding: 0;
   font-family: "Pretendard", "Noto Sans KR", sans-serif;
   color: #2b2b2b;
-  background: #fff; /* 파란 배경은 섹션에서만 */
+  background: #fff;
   scroll-behavior: smooth;
-  overflow-x: hidden;
 }
 
 /* ============================= */
@@ -173,10 +180,10 @@ html, body {
 /* ============================= */
 .features-title {
   font-size: 1.8rem;
-  font-weight: 700;
+  font-weight: 00;
   color: #007bff;
   margin-bottom: 60px;
-  margin-top: 20px; /* 위 화살표와 간격 확보 */
+  margin-top: 40px; /* 위 화살표와 간격 확보 */
   position: relative;
 }
 
@@ -266,7 +273,7 @@ html, body {
 }
 
 .howto-inline-title {
-  font-size: 1.6rem;
+  font-size: 1.7rem;
   font-weight: 700;
   color: #007bff;
   margin-bottom: 20px;
@@ -287,7 +294,7 @@ html, body {
   position: relative;
   margin-bottom: 22px;
   padding-left: 48px;
-  font-size: 1rem;
+  font-size: 1.1rem;
   color: #333;
   line-height: 1.7;
 }
