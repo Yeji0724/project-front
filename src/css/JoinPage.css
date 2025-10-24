@@ -6,16 +6,15 @@
 
 /* 페이지 전체: 화면에서 헤더/푸터를 제외한 높이만 차지 */
 .join-page {
-  flex: 1;
   display: flex;
-  justify-content: center; /* 세로 중앙 정렬 */
-  align-items: center;     /* 가로 중앙 정렬 */
+  justify-content: center;
+  align-items: center;
   background: linear-gradient(135deg, #e8f0ff 0%, #f5f8ff 100%);
+  height: calc(100vh - 122px); /* 푸터 높이만큼 뺌 */
   box-sizing: border-box;
   overflow: hidden;
-  min-height: calc(100vh - var(--header-h) - var(--footer-h));
-  padding: 60px 0; /* 위아래 여백 부드럽게 */
 }
+
 
 /* 중앙 영역 */
 .join-container {
@@ -32,7 +31,8 @@
   backdrop-filter: blur(10px);
   border-radius: 20px;
   box-shadow: 0 10px 30px rgba(0, 123, 255, 0.1);
-  padding: 50px 55px;
+  margin-top: -5px;
+  padding: 70px 60px;
   width: 400px;
   text-align: center;
   transition: all 0.3s ease;
@@ -107,7 +107,7 @@ input[type="password"]::-webkit-textfield-decoration-container {
   outline: none;
 }
 
-/* 👁️ 눈 아이콘 */
+/* 눈 아이콘 */
 .toggle-visibility {
   position: absolute;
   right: 12px;
@@ -133,7 +133,7 @@ input[type="password"]::-webkit-textfield-decoration-container {
   left: 4px;
   bottom: 1; /* input-group의 padding-bottom 영역에 고정 */
   font-size: 0.82rem;
-  line-height: 1.2;
+  line-height: 0;
   text-align: left;
   opacity: 0;
   transition: opacity 0.2s ease;
@@ -171,11 +171,55 @@ input[type="password"]::-webkit-textfield-decoration-container {
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 5px 15px rgba(0, 123, 255, 0.25);
-  margin-top: 10px;
+  margin-top: 5px;
 }
 .join-btn:hover {
   background: linear-gradient(135deg, #0066e3, #0093f0);
   transform: translateY(-2px);
+}
+
+/* 실패 문구 */
+.join-error-text {
+  margin-top: 0px; /* 버튼과 너무 붙지 않게 */
+  margin-bottom: 1px;
+  font-size: 0.85rem;
+  color: #ff4a4a;
+  min-height: 18px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  text-align: center;
+}
+
+.join-error-text.show {
+  opacity: 1;
+}
+
+/* 회원가입 성공 토스트 */
+.login-toast-popup {
+  border-radius: 8px !important;
+  padding: 8px 18px !important;
+  background: rgba(75, 107, 251, 0.95) !important;
+  color: #fff !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+  animation: toast-fade 0.2s ease;
+}
+
+.login-toast-title {
+  font-weight: 600 !important;
+  font-size: 0.95rem !important;
+  color: #fff !important;
+  margin: 0 !important;
+}
+
+@keyframes toast-fade {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 /* 반응형 */

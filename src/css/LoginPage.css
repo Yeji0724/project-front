@@ -78,6 +78,23 @@
   box-shadow: 0 0 6px rgba(255, 74, 74, 0.25);
 }
 
+/* 눈 아이콘 */
+.toggle-visibility {
+  position: absolute;
+  right: 12px;
+  top: 30%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #777;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
 /* 오류 문구 */
 .error-text {
   position: absolute;

@@ -6,6 +6,7 @@ import "../css/LoginPage.css";
 function LoginPage({ setIsLoggedIn }) {
   const navigate = useNavigate();
   const [form, setForm] = useState({ id: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState({
     id: "",
     password: "",
@@ -28,13 +29,12 @@ function LoginPage({ setIsLoggedIn }) {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-    setErrorMsg({ id: "", password: "", common: "" }); // 입력 시 오류 초기화
+    setErrorMsg({ id: "", password: "", common: "" });
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    // ✅ 빈칸 검사
     if (!form.id.trim()) {
       setErrorMsg({ id: "아이디를 입력해주세요.", password: "", common: "" });
       return;
@@ -92,18 +92,61 @@ function LoginPage({ setIsLoggedIn }) {
             {/* 비밀번호 */}
             <div className="input-group">
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 name="password"
                 placeholder="비밀번호"
                 className={`login-input ${
-                  errorMsg.password ? "input-error" : ""
+                  errorMsg.password || errorMsg.common ? "input-error" : ""
                 }`}
                 value={form.password}
                 onChange={handleChange}
                 required
               />
-              {errorMsg.password && (
-                <p className="error-text">{errorMsg.password}</p>
+              {form.password && (
+                <button
+                  type="button"
+                  className="toggle-visibility"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label="비밀번호 보기"
+                >
+                  {showPassword ? (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M17.94 17.94A10.44 10.44 0 0 1 12 20c-7.5 0-10-8-10-8a17.1 17.1 0 0 1 5.06-6.44" />
+                      <path d="M1 1l22 22" />
+                    </svg>
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  )}
+                </button>
+              )}
+
+              {(errorMsg.password || errorMsg.common) && (
+                <p className="error-text">
+                  {errorMsg.password || errorMsg.common}
+                </p>
               )}
             </div>
 
