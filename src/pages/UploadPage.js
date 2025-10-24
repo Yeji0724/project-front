@@ -21,13 +21,35 @@ const UploadPage = () => {
         setFiles((prev) => prev.filter((_, i) => i !== index));
     };
 
-    const handleUpload = () => {
-        if (files.length ===0) {
-            alert("선택한 파일이 없습니다.");
-            return;
+    const handleUpload = async () => {
+        if (files.length === 0) {
+        alert("파일을 선택해주세요!");
+        return;
         }
-        // 업로드 로직 추가
-        navigate("/progress");      // 업로드 후 진행현황 페이지로 이동
+
+        const formData = new FormData();
+        files.forEach((file) => formData.append("files", file));
+
+        try {
+        const userId = 1;
+        const response = await fetch(`http://localhost:8000/upload/?user_id=${userId}`, {
+            method: "POST",
+            body: formData,
+        });
+
+        if (!response.ok) {
+            throw new Error("업로드 실패");
+        }
+
+        const data = await response.json();
+        console.log("서버 응답:", data);
+
+        // 업로드 성공 시 페이지 이동
+        navigate("/progress");
+        } catch (error) {
+        console.error("업로드 중 오류:", error);
+        alert("업로드 중 오류가 발생했습니다.");
+        }
     };
 
     return (
