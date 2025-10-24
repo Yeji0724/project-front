@@ -1,72 +1,86 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../css/DirectoryPage.css";
 
-const dummyData = {
-  "카테고리1": ["파일1", "파일2"],
-  "카테고리2": ["파일3", "파일4"],
-  "카테고리3": ["파일5"]
-};
-
 function DirectoryPage() {
-  const [filesByCategory, setFilesByCategory] = useState(dummyData);
+  const [folders, setFolders] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("");
+  const navigate = useNavigate(); // 페이지 이동용
 
-  // 전체 다운로드
-  const handleDownloadAll = async () => {
-    try {
-      const response = await fetch("http://백엔드주소/download/all"); // 백엔드 전체 다운로드 엔드포인트
-      if (!response.ok) throw new Error("다운로드 실패");
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "all_files.zip";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    } catch (err) {
-      alert(err.message);
-    }
+  // localStorage에서 폴더 불러오기
+  useEffect(() => {
+    const storedFolders = JSON.parse(localStorage.getItem("userFolders") || "[]");
+    setFolders(storedFolders);
+  }, []);
+
+  // 폴더 생성
+  const handleCreateFolder = () => {
+    const folderName = newFolderName.trim() === "" ? "unknown" : newFolderName.trim();
+    const newFolder = { name: folderName, createdAt: Date.now() };
+
+    const updatedFolders = [newFolder, ...folders];
+    setFolders(updatedFolders);
+    localStorage.setItem("userFolders", JSON.stringify(updatedFolders));
+
+    setNewFolderName("");
+    setShowModal(false);
   };
 
-  // 카테고리별 다운로드
-  const handleDownloadCategory = async (category) => {
-    try {
-      const response = await fetch(`http://백엔드주소/download/category?name=${encodeURIComponent(category)}`);
-      if (!response.ok) throw new Error("다운로드 실패");
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${category}.zip`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    } catch (err) {
-      alert(err.message);
-    }
+  // 폴더 클릭 시 카테고리 페이지로 이동
+  const handleOpenFolder = (folderName) => {
+    navigate(`/directory/${folderName}`);
   };
 
   return (
     <div className="directory-page">
-      <h2>분류파일 관리</h2>
-
-      <div className="buttons">
-        <button onClick={handleDownloadAll}>전체 문서 다운로드</button>
+      <div className="directory-header">
+        <h2 className="directory-title">폴더 목록</h2>
+        <button className="create-folder-btn" onClick={() => setShowModal(true)}>
+          + 폴더 생성
+        </button>
       </div>
 
-      <div className="categories">
-        {Object.entries(filesByCategory).map(([category, files]) => (
-          <div key={category} className="category">
-            <h3>{category} ({files.length}개)</h3>
-            <button onClick={() => handleDownloadCategory(category)}>카테고리 다운로드</button>
-            <ul>
-              {files.map((file, idx) => (
-                <li key={idx}>{file}</li>
-              ))}
-            </ul>
+      <div className="folder-container">
+        {folders.length === 0 ? (
+          <p className="no-folder-text">생성된 폴더가 없습니다 😢</p>
+        ) : (
+          folders.map((folder, idx) => (
+            <div
+              key={idx}
+              className="folder-card"
+              onClick={() => handleOpenFolder(folder.name)} // 클릭 시 이동
+            >
+              <span className="folder-icon">📁</span>
+              <p className="folder-name">{folder.name}</p>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* 폴더 생성 모달 */}
+      {showModal && (
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <h3>새 폴더 생성</h3>
+            <input
+              type="text"
+              placeholder="폴더 이름 입력 (미입력 시 unknown)"
+              value={newFolderName}
+              onChange={(e) => setNewFolderName(e.target.value)}
+              className="modal-input"
+            />
+            <div className="modal-buttons">
+              <button className="cancel-btn" onClick={() => setShowModal(false)}>
+                취소
+              </button>
+              <button className="confirm-btn" onClick={handleCreateFolder}>
+                생성
+              </button>
+            </div>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

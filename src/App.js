@@ -6,24 +6,25 @@ import MainPage from "./pages/MainPage";
 import JoinPage from "./pages/JoinPage";
 import LoginPage from "./pages/LoginPage";
 import UploadPage from "./pages/UploadPage";
-import ProgressPage from "./pages/ProgressPage";
 import DirectoryPage from "./pages/DirectoryPage";
+import SelectPage from "./pages/SelectPage"; 
+import CategoryPage from "./pages/CategoryPage";
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 여부 상태
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   return (
     <Router>
-      {/* 헤더에 로그인 상태와 상태 변경 함수 전달 */}
       <Header isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
       <Routes>
-        {/* 로그인 상태에 따라 메인 경로 변경 */}
-        <Route path="/" element={isLoggedIn ? <UploadPage /> : <MainPage />} />
+        {/* 로그인 시 선택 페이지로 이동 */}
+        <Route path="/" element={isLoggedIn ? <SelectPage /> : <MainPage />} />
         <Route path="/join" element={<JoinPage />} />
         <Route path="/login" element={<LoginPage setIsLoggedIn={setIsLoggedIn} />} />
         <Route path="/upload" element={<UploadPage />} />
-        <Route path="/progress" element={<ProgressPage />} />
         <Route path="/directory" element={<DirectoryPage />} />
+        <Route path="/select" element={<SelectPage />} />
+        <Route path="/directory/:folderName" element={<CategoryPage />} />
       </Routes>
       <Footer />
     </Router>

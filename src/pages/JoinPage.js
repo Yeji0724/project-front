@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import Swal from "sweetalert2"; 
+import Swal from "sweetalert2";
 import "../css/JoinPage.css";
 
 function JoinPage() {
@@ -10,6 +10,7 @@ function JoinPage() {
     password: "",
     password_confirm: "",
     email: "",
+    folder_name: "", // 가상 폴더 이름 (선택)
   });
 
   const [validation, setValidation] = useState({
@@ -19,8 +20,7 @@ function JoinPage() {
     emailValid: false,
   });
 
-  const [errorMsg, setErrorMsg] = useState(""); // 전체 실패 메시지용
-
+  const [errorMsg, setErrorMsg] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
@@ -34,7 +34,7 @@ function JoinPage() {
     const { name, value } = e.target;
     const updatedForm = { ...form, [name]: value };
     setForm(updatedForm);
-    setErrorMsg(""); // 입력 중엔 오류문구 초기화
+    setErrorMsg("");
 
     if (name === "user_login_id") {
       setValidation((p) => ({ ...p, idValid: regex.id.test(value) }));
@@ -61,54 +61,71 @@ function JoinPage() {
   };
 
   const handleJoin = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (
-      !validation.idValid ||
-      !validation.pwValid ||
-      !validation.pwMatch ||
-      !validation.emailValid
-    ) {
-      if (!validation.idValid)
-        return setErrorMsg("아이디는 영문+숫자 8~20자로 입력해주세요.");
-      if (!validation.pwValid)
-        return setErrorMsg("비밀번호는 영문+숫자 8~20자여야 합니다.");
-      if (!validation.pwMatch)
-        return setErrorMsg("비밀번호가 일치하지 않습니다.");
-      if (!validation.emailValid)
-        return setErrorMsg("유효한 이메일 형식이 아닙니다.");
-    }
+  const folderName =
+    form.folder_name.trim() === "" ? "unknown" : form.folder_name.trim();
 
-    try {
-      await axios.post("http://127.0.0.1:8000/auth/register", {
-        user_login_id: form.user_login_id,
-        email: form.email,
-        password: form.password,
-      });
+  if (
+    !validation.idValid ||
+    !validation.pwValid ||
+    !validation.pwMatch ||
+    !validation.emailValid
+  ) {
+    if (!validation.idValid)
+      return setErrorMsg("아이디는 영문+숫자 8~20자로 입력해주세요.");
+    if (!validation.pwValid)
+      return setErrorMsg("비밀번호는 영문+숫자 8~20자여야 합니다.");
+    if (!validation.pwMatch)
+      return setErrorMsg("비밀번호가 일치하지 않습니다.");
+    if (!validation.emailValid)
+      return setErrorMsg("유효한 이메일 형식이 아닙니다.");
+  }
 
-      // 회원가입 성공 시 토스트 표시
-      const Toast = Swal.mixin({
-        toast: true,
-        position: "top",
-        showConfirmButton: false,
-        timer: 1500,
-        timerProgressBar: false,
-        customClass: {
-          popup: "login-toast-popup",
-          title: "login-toast-title",
-        },
-      });
+  try {
+    await axios.post("http://127.0.0.1:8000/auth/register", {
+      user_login_id: form.user_login_id,
+      email: form.email,
+      password: form.password,
+    });
 
-      Toast.fire({
-        icon: "success",
-        title: `회원가입 완료! 환영합니다 ${form.user_login_id}님`,
-      });
+    // 폴더 생성 (localStorage)
+    const existing = JSON.parse(localStorage.getItem("userFolders") || "[]");
+    const newFolder = { name: folderName, createdAt: Date.now() };
+    localStorage.setItem(
+      "userFolders",
+      JSON.stringify([newFolder, ...existing])
+    );
 
-      setTimeout(() => (window.location.href = "/login"), 1500);
-    } catch {
-      setErrorMsg("이미 존재하는 아이디입니다.");
-    }
-  };
+    // 오른쪽 상단 알림
+    const Toast = Swal.mixin({
+      toast: true,
+      position: "top", // 가운데 상단
+      showConfirmButton: false,
+      timer: 2000,
+      timerProgressBar: false,
+      customClass: {
+        popup: "login-toast-popup",
+        title: "login-toast-title",
+      },
+    });
+
+    Toast.fire({
+      icon: "success",
+      html: `
+        <div style="text-align:left; line-height:1.4;">
+          <b>회원가입 완료!</b> 환영합니다 <b>${form.user_login_id}</b>님<br/>
+          <small style="opacity:0.9;">📁 ‘${folderName}’ 폴더가 생성되었습니다.</small>
+        </div>
+      `,
+    });
+
+    // 로그인 페이지로 이동
+    setTimeout(() => (window.location.href = "/login"), 2200);
+  } catch {
+    setErrorMsg("이미 존재하는 아이디입니다.");
+  }
+};
 
   return (
     <div className="join-page">
@@ -293,7 +310,26 @@ function JoinPage() {
               )}
             </div>
 
-            {/* 실패 문구 — 버튼 위로 이동 */}
+            {/* 폴더 이름 (선택) */}
+            <div className="input-group folder-tooltip-wrapper">
+              <input
+                type="text"
+                name="folder_name"
+                placeholder="폴더 이름 (선택, 미입력 시 unknown)"
+                className="join-input"
+                value={form.folder_name}
+                onChange={handleChange}
+              />
+              <div className="tooltip-icon">❓
+                <span className="tooltip-text">
+                  이 폴더는 실제 컴퓨터 폴더가 아니라<br />
+                  사이트 내에서 문서를 분류하기 위한 <b>가상의 폴더</b>입니다.<br />
+                  입력하지 않으면 기본 폴더명은 <b>'unknown'</b>으로 생성됩니다.
+                </span>
+              </div>
+            </div>
+
+            {/* 실패 문구 */}
             <p className={`join-error-text ${errorMsg ? "show" : ""}`}>
               {errorMsg}
             </p>

@@ -1,0 +1,168 @@
+.select-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 122px); 
+  background: linear-gradient(135deg, #e8f0ff 0%, #f5f8ff 100%);
+  text-align: center;
+  animation: fadeIn 0.8s ease;
+  overflow: hidden;
+}
+
+
+/* 타이틀 */
+.select-title {
+  font-size: 2.3rem;
+  font-weight: 800;
+  color: #0051c7; /* 진한 파랑 */
+  margin-bottom: 55px;
+  margin-top: -20px;
+  letter-spacing: -0.3px;
+  text-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    0 0 4px rgba(255, 255, 255, 0.8); /* 부드럽고 선명한 대비 */
+  animation: floatTitle 1.8s ease-in-out infinite alternate;
+  position: relative;
+}
+
+/* 타이틀 밑줄 포인트 효과 */
+.select-title::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -10px;
+  transform: translateX(-50%);
+  width: 90px;
+  height: 3px;
+  border-radius: 3px;
+  background-color: #007bff;
+  opacity: 0.7;
+}
+
+
+/* 카드 영역 */
+.select-boxes {
+  display: flex;
+  gap: 45px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* 카드 박스 */
+.select-card {
+  background: white;
+  border-radius: 22px;
+  width: 280px;
+  height: 210px;
+  box-shadow: 0 6px 15px rgba(0, 123, 255, 0.12);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  padding: 25px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 카드 hover 효과 */
+.select-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 10px 28px rgba(0, 123, 255, 0.25);
+}
+
+/* 카드 안쪽 콘텐츠 */
+.select-card h3 {
+  font-size: 1.7rem;
+  margin-bottom: 10px;
+  color: #007bff;
+  font-weight: 700;
+}
+
+.select-card p {
+  font-size: 0.98rem;
+  color: #444;
+  opacity: 0.9;
+}
+
+/* 카드 border 구분 */
+.upload {
+  border-top: 5px solid #ffbb00;
+}
+
+.classify {
+  border-top: 5px solid #28a745;
+}
+
+/* 카드 hover 시 반짝이 효과 */
+.select-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transform: skewX(-25deg);
+}
+
+.select-card:hover::after {
+  animation: shimmer 0.9s ease;
+}
+
+/* 반응형 */
+@media (max-width: 600px) {
+  .select-boxes {
+    flex-direction: column;
+    gap: 25px;
+  }
+
+  .select-card {
+    width: 85%;
+    height: 190px;
+  }
+
+  .select-title {
+    font-size: 1.8rem;
+    margin-top: -10px;
+  }
+}
+
+/* 타이틀 애니메이션 */
+@keyframes floatTitle {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-6px);
+  }
+}
+
+/* 카드 반짝임 효과 */
+@keyframes shimmer {
+  0% {
+    left: -75%;
+  }
+  100% {
+    left: 125%;
+  }
+}
+
+/* 페이지 등장 효과 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
