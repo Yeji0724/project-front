@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import Swal from "sweetalert2";
+import Swal from "sweetalert2"; 
 import "../css/JoinPage.css";
 
 function JoinPage() {
@@ -19,20 +19,22 @@ function JoinPage() {
     emailValid: false,
   });
 
+  const [errorMsg, setErrorMsg] = useState(""); // 전체 실패 메시지용
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  // 정규식 묶어서 관리
   const regex = {
     id: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,20}$/,
     pw: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,20}$/,
-    email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, // 이메일 기본 패턴
+    email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     const updatedForm = { ...form, [name]: value };
     setForm(updatedForm);
+    setErrorMsg(""); // 입력 중엔 오류문구 초기화
 
     if (name === "user_login_id") {
       setValidation((p) => ({ ...p, idValid: regex.id.test(value) }));
@@ -60,28 +62,21 @@ function JoinPage() {
 
   const handleJoin = async (e) => {
     e.preventDefault();
+
     if (
       !validation.idValid ||
       !validation.pwValid ||
       !validation.pwMatch ||
       !validation.emailValid
     ) {
-      let msg = "";
-      if (!validation.idValid) msg = "아이디는 영문+숫자 8~20자입니다.";
-      else if (!validation.pwValid)
-        msg = "비밀번호는 영문+숫자 8~20자입니다.";
-      else if (!validation.pwMatch) msg = "비밀번호가 일치하지 않습니다.";
-      else if (!validation.emailValid) msg = "유효한 이메일 형식이 아닙니다.";
-
-      Swal.fire({
-        toast: true,
-        position: "top",
-        icon: "error",
-        title: `회원가입 실패: ${msg}`,
-        showConfirmButton: false,
-        timer: 2000,
-      });
-      return;
+      if (!validation.idValid)
+        return setErrorMsg("아이디는 영문+숫자 8~20자로 입력해주세요.");
+      if (!validation.pwValid)
+        return setErrorMsg("비밀번호는 영문+숫자 8~20자여야 합니다.");
+      if (!validation.pwMatch)
+        return setErrorMsg("비밀번호가 일치하지 않습니다.");
+      if (!validation.emailValid)
+        return setErrorMsg("유효한 이메일 형식이 아닙니다.");
     }
 
     try {
@@ -91,25 +86,27 @@ function JoinPage() {
         password: form.password,
       });
 
-      Swal.fire({
+      // 회원가입 성공 시 토스트 표시
+      const Toast = Swal.mixin({
         toast: true,
         position: "top",
-        icon: "success",
-        title: `회원가입 완료! 환영합니다 ${form.user_login_id}님 🎉`,
         showConfirmButton: false,
         timer: 1500,
+        timerProgressBar: false,
+        customClass: {
+          popup: "login-toast-popup",
+          title: "login-toast-title",
+        },
+      });
+
+      Toast.fire({
+        icon: "success",
+        title: `회원가입 완료! 환영합니다 ${form.user_login_id}님`,
       });
 
       setTimeout(() => (window.location.href = "/login"), 1500);
     } catch {
-      Swal.fire({
-        toast: true,
-        position: "top",
-        icon: "error",
-        title: "회원가입 실패: 이미 존재하는 아이디입니다.",
-        showConfirmButton: false,
-        timer: 2000,
-      });
+      setErrorMsg("이미 존재하는 아이디입니다.");
     }
   };
 
@@ -295,6 +292,11 @@ function JoinPage() {
                 </p>
               )}
             </div>
+
+            {/* 실패 문구 — 버튼 위로 이동 */}
+            <p className={`join-error-text ${errorMsg ? "show" : ""}`}>
+              {errorMsg}
+            </p>
 
             <button type="submit" className="join-btn">
               회원가입

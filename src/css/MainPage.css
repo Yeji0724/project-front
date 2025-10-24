@@ -133,8 +133,10 @@ html, body {
   bottom: 20px;
   transform: translateX(-50%);
   font-size: 30px;
+  font-weight: 500;
   color: rgba(255, 255, 255, 0.973);
-  text-shadow: 0 0 8px rgba(0,0,0,.25);
+  text-shadow: 0 0 8px rgba(0,0,0,.25),
+               0 0 20px rgba(0, 0, 0, 0.25);
   animation: hint 1.8s ease-in-out infinite;
   cursor: pointer;
   user-select: none;
@@ -167,8 +169,10 @@ html, body {
   left: 50%;
   transform: translateX(-50%);
   font-size: 30px;
+  font-weight: 500;
   color: #007bff;
-  text-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+  text-shadow: 0 0 6px rgba(0, 0, 0, 0.1),
+               0 0 5px rgba(0, 0, 0, 0.25);
   animation: hint 1.8s ease-in-out infinite;
   cursor: pointer;
   user-select: none;
