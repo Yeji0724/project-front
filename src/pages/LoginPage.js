@@ -52,7 +52,7 @@ function LoginPage({ setIsLoggedIn }) {
 
       localStorage.setItem("token", res.data.token);
       setIsLoggedIn(true);
-      navigate("/upload");
+      navigate("/");
     } catch (err) {
       console.error("로그인 실패:", err.response?.data || err.message);
       setIsLoggedIn(false);

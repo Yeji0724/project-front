@@ -1,18 +1,14 @@
 :root { 
-  --header-h: 0px; /* JS가 실제 높이로 덮어씀 */
+  --header-h: 0px;
 }
 
-/* ============================= */
 /* 기본 설정 */
-/* ============================= */
-/* 메인 페이지 전용으로만 스크롤 설정 */
 html:has(.main-container),
 body:has(.main-container) {
   overflow-x: hidden;
   overflow-y: auto;
 }
 
-/* 기본 설정 (공통 스타일만 남김) */
 html, body {
   margin: 0;
   padding: 0;
@@ -22,12 +18,10 @@ html, body {
   scroll-behavior: smooth;
 }
 
-/* ============================= */
-/* 메인 섹션 (파란 배경) */
-/* ============================= */
+/* 메인 섹션 */
 .main-container {
   position: relative;
-  height: calc(100dvh - var(--header-h)); /* 헤더 높이만큼 빼기 */
+  height: calc(100dvh - var(--header-h));
   background: linear-gradient(135deg, #e8f0ff 0%, #f5f8ff 100%);
   display: flex;
   flex-direction: column;
@@ -35,7 +29,7 @@ html, body {
   justify-content: flex-start;
   text-align: center;
   box-sizing: border-box;
-  padding-top: 110px; /* 제목/박스 약간 위로 */
+  padding-top: 110px;
   overflow: hidden;
 }
 
@@ -46,13 +40,11 @@ html, body {
   text-align: center;
 }
 
-/* ============================= */
-/* 제목 / 박스 */
-/* ============================= */
+/* 제목/박스 */
 .project-title {
   margin: 0 0 40px 0;
   font-size: 2.5rem;
-  font-weight: 900; /* 진하게 */
+  font-weight: 900;
   color: #007bff;
   letter-spacing: 0.5px;
   text-align: center;
@@ -123,10 +115,7 @@ html, body {
   letter-spacing: 0.2px;
 }
 
-
-/* ============================= */
-/* 하단 화살표 (▼ 아래로) */
-/* ============================= */
+/* 아래로 스크롤 힌트 */
 .scroll-hint {
   position: absolute;
   left: 50%;
@@ -137,32 +126,33 @@ html, body {
   color: rgba(255, 255, 255, 0.973);
   text-shadow: 0 0 8px rgba(0,0,0,.25),
                0 0 20px rgba(0, 0, 0, 0.25);
-  animation: hint 1.8s ease-in-out infinite;
+  animation: hint-down 1.8s ease-in-out infinite;
   cursor: pointer;
   user-select: none;
   pointer-events: auto;
 }
 
-/* 통통 튀는 애니메이션 */
-@keyframes hint {
-  0%,100% { opacity: .35; transform: translate(-50%, 0); }
-  50% { opacity: 1; transform: translate(-50%, 6px); }
+@keyframes hint-down {
+  0%,100% {
+    opacity: .45;
+    transform: translate(-50%, 0);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, 6px);
+  }
 }
 
-/* ============================= */
-/* 기능 섹션 (흰 배경) */
-/* ============================= */
+/* 기능 섹션 */
 .features-section {
-  position: relative; /* ▲ 화살표 절대위치용 */
+  position: relative;
   background-color: #ffffff;
   min-height: 100vh;
   padding: 100px 60px 5px;
   text-align: center;
 }
 
-/* ============================= */
-/* 맨 위로 가는 화살표 (▲ 위로) */
-/* ============================= */
+/* 맨 위로 가기 */
 .scroll-top {
   position: absolute;
   top: 25px;
@@ -173,21 +163,30 @@ html, body {
   color: #007bff;
   text-shadow: 0 0 6px rgba(0, 0, 0, 0.1),
                0 0 5px rgba(0, 0, 0, 0.25);
-  animation: hint 1.8s ease-in-out infinite;
+  animation: hint-up 1.8s ease-in-out infinite;
   cursor: pointer;
   user-select: none;
   pointer-events: auto;
 }
 
-/* ============================= */
-/* 주요 기능 섹션 타이틀 */
-/* ============================= */
+@keyframes hint-up {
+  0%,100% {
+    opacity: .45;
+    transform: translate(-50%, 0);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -6px);
+  }
+}
+
+/* 섹션 타이틀 */
 .features-title {
   font-size: 1.8rem;
-  font-weight: 00;
+  font-weight: 700;
   color: #007bff;
-  margin-bottom: 60px;
-  margin-top: 40px; /* 위 화살표와 간격 확보 */
+  margin-bottom: 40px;
+  margin-top: 40px;
   position: relative;
 }
 
@@ -203,132 +202,165 @@ html, body {
   border-radius: 2px;
 }
 
-/* ============================= */
-/* 4개 기능 카드 */
-/* ============================= */
-.features-grid {
+/* 기능 5개: 위 3 / 아래 2 (촘촘하고 연결감 있게 - 옵션 B) */
+.features-rows {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 40px;
-  max-width: 1200px;
+  gap: 22px 22px; /* 촘촘한 간격 */
+}
+
+.row {
+  display: grid;
+  gap: 22px;
+}
+
+.row-top {
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+}
+
+.row-bottom {
+  grid-template-columns: repeat(2, minmax(180px, 1fr));
+  max-width: 750px;
   margin: 0 auto;
 }
 
+
+/* 기능 타이틀 */
+.features-title {
+  margin-top: 40px;
+  margin-bottom: 40px;
+  font-size: 1.95rem;
+  font-weight: 900;
+  color: #0057e7;
+}
+
+/* 기능 카드 레이아웃 */
+.features-rows {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 26px;
+  max-width: 1050px;
+  margin: 0 auto;
+}
+
+.feature-item:nth-child(4),
+.feature-item:nth-child(5) {
+  grid-column: span 1;
+}
+
+/* 카드 스타일 */
 .feature-item {
-  background: #f8fbff;
-  padding: 40px 25px;
-  border-radius: 18px;
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.05);
-  transition: all 0.3s ease;
+  background: #f7faff;
+  padding: 32px 22px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.08);
+
+  min-height: 210px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  transition: transform .28s ease, box-shadow .32s ease;
 }
 
+/* Hover 시 자연스러운 반응 */
 .feature-item:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 8px 20px rgba(0, 123, 255, 0.15);
-  background: linear-gradient(180deg, #fafdff, #f2f7ff);
+  transform: translateY(-10px) scale(1.015);
+  box-shadow: 0 10px 28px rgba(0, 123, 255, .2);
 }
 
+
+/* 아이콘 */
 .feature-icon {
-  font-size: 2.2rem;
-  color: #007bff;
-  margin-bottom: 18px;
-}
-
-.feature-item h3 {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #2b2b2b;
+  font-size: 2rem;
   margin-bottom: 10px;
 }
 
+/* 기능 제목 강조 */
+.feature-item h3 {
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: #002f8c;
+  margin-bottom: 6px;
+}
+
+/* 기능 설명 */
 .feature-item p {
-  font-size: 0.95rem;
+  font-size: 0.92rem;
+  line-height: 1.45;
   color: #555;
-  line-height: 1.6;
-}
-
-@media (max-width: 1024px) {
-  .features-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-@media (max-width: 600px) {
-  .features-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* ============================= */
-/* 주요 기능 + 이용 방법 (한 섹션) */
+/* 이용방법 */
 /* ============================= */
+
 .divider {
   width: 80%;
   max-width: 900px;
   height: 1px;
-  background-color: #e0e6f3;
+  background-color: #cfd8ef;
   border: none;
-  margin: 70px auto 60px;
+  margin: 50px auto 35px;
 }
 
-.howto-inline {
-  text-align: center;
-  max-width: 900px;
-  margin: 0 auto;
-}
-
-.howto-inline-title {
+/* 상단 타이틀 */
+.howto-title-main {
   font-size: 1.7rem;
-  font-weight: 700;
-  color: #007bff;
-  margin-bottom: 20px;
+  font-weight: 900;
+  color: #0043bb;
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+/* 두 카드 */
+.howto-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  max-width: 900px;
+  margin: 0 auto 80px;
+}
+
+/* 개별 카드 */
+.howto-card {
+  background: #fff;
+  border: 1px solid #e3e9f8;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: left;
+  box-shadow: 0 3px 10px rgba(0,0,0,.05);
+}
+
+/* 카드 제목 */
+.howto-title {
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: #0038ad;
+  margin-bottom: 12px;
   text-align: center;
 }
 
-.howto-inline-list {
-  list-style: none;
-  counter-reset: step;
-  padding: 0;
-  margin: 0 auto;
-  display: inline-block; /* 목록 전체를 중앙에 정렬 */
+/* 카드 목록 */
+.howto-list li {
+  font-size: 0.92rem;
+  margin-bottom: 8px;
   text-align: left;
 }
 
-.howto-inline-list li {
-  counter-increment: step;
-  position: relative;
-  margin-bottom: 22px;
-  padding-left: 48px;
-  font-size: 1.1rem;
-  color: #333;
-  line-height: 1.7;
-}
-
-.howto-inline-list li::before {
-  content: counter(step) ".";
-  position: absolute;
-  left: 0;
-  top: 0;
-  color: #007bff;
-  font-weight: 800;
-  font-size: 1.2rem;
-}
-
-.howto-inline-list strong {
-  font-weight: 700;
-  color: #000;
-}
-
 /* 반응형 */
-@media (max-width: 768px) {
-  .divider {
-    width: 90%;
-    margin: 60px auto 40px;
+@media (max-width: 900px) {
+  .features-rows {
+    grid-template-columns: repeat(2, 1fr);
   }
-  .howto-inline {
-    padding: 0 20px;
+
+  .howto-split {
+    grid-template-columns: 1fr;
   }
-  .howto-inline-list li {
-    padding-left: 40px;
-    font-size: 0.95rem;
+}
+
+@media (max-width: 650px) {
+  .features-rows {
+    grid-template-columns: 1fr;
   }
 }

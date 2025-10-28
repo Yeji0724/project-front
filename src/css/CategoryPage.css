@@ -1,95 +1,324 @@
+/* ===== 전체 페이지 ===== */
 .category-page {
   min-height: calc(100vh - 122px);
-  background: linear-gradient(135deg, #e8f0ff 0%, #f5f8ff 100%);
-  padding: 80px 60px 60px;
-  box-sizing: border-box;
-  animation: fadeIn 0.6s ease;
+  background: #f4f6fd;
+  padding: 45px 110px;
+  animation: fadeIn 0.45s ease;
+  font-family: "Pretendard", sans-serif;
 }
 
-/* 제목 + 버튼 영역 */
-.category-header {
+/* 돌아가기 */
+.back-btn {
+  background: none;
+  border: none;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #2853ca;
+  margin-bottom: 12px;
+}
+.back-btn:hover {
+  color: #1c2f6b;
+  transform: translateX(-3px);
+}
+
+.top-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: -20px;  
-  margin-bottom: 30px;
+  margin-bottom: 14px;
 }
 
-.category-title {
+/* Finder 스타일 디렉토리 경로 표시 */
+.sync-path-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #eef3ff;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  color: #1e2a55;
+  border: 1px solid #d8e1f7;
+  max-width: 65%;
+  overflow: hidden;
+}
+
+.folder-icon {
+  font-size: 1.1rem;
+}
+
+.path-seg {
+  font-weight: 700;
+  color: #2b3d74;
+}
+
+.sync-path-box .arrow {
+  margin: 0 4px;
+  font-size: 0.78rem;
+  color: #4a5e9a;
+}
+
+.path-placeholder {
+  color: #7e86a1;
+}
+
+/* 변경 버튼 */
+.edit-btn {
+  margin-left: auto;
+  background: #0056ff;
+  border: none;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+.edit-btn:hover {
+  background: #0046d1;
+}
+
+
+.guide-text {
+  font-size: 0.95rem;
+  color: #656d82;
+  margin: -20px 0 22px;
+}
+
+/* 폴더 상단 영역 */
+.folder-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.folder-title {
   font-size: 2rem;
   font-weight: 800;
-  color: #0051c7;
+  color: #1a264d;
 }
 
-/* 버튼 묶음 */
-.category-actions {
+/* ▶ 우측 버튼 */
+.folder-actions {
+  display: flex;
+  gap: 10px;
+}
+.folder-actions button {
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  font-size: 0.9rem;
+}
+.folder-actions button:first-child {
+  background: #007bff;
+}
+.folder-actions button:last-child {
+  background: #28a745;
+}
+
+/* ===== 카테고리 리스트 ===== */
+.content-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* 카테고리 카드 */
+.item-block {
+  background: #fff;
+  padding: 18px 20px;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.08);
+  transition: 0.25s ease;
+}
+.item-block:hover {
+  transform: translateY(-4px);
+}
+
+/* 카드 헤더 */
+.item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cat-name {
+  font-size: 1.11rem;
+  font-weight: 800;
+  color: #1e2a55;
+}
+
+/* 오른쪽 아이콘 묶음 */
+.right-icons {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  position: relative;
+}
+
+/* 드롭다운 화살표 */
+.arrow {
+  font-size: 1.15rem;
+  opacity: 0.8;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* 메뉴 3점 버튼 */
+.menu-btn {
+  font-size: 1.25rem;
+  cursor: pointer;
+  opacity: 0.85;
+}
+.menu-btn:hover {
+  opacity: 1;
+}
+
+/* 메뉴박스 - 화면 위치 고정 */
+.menu-box {
+  position: fixed;
+  width: 130px;
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #d9dcee;
+  box-shadow: 0 6px 18px rgba(0,0,0,.15);
+  overflow: hidden;
+  animation: fadeIn 0.2s ease-out;
+  z-index: 5000;
+}
+
+/* 메뉴 옵션 버튼 */
+.menu-box button {
+  width: 100%;
+  padding: 11px 14px;
+  font-size: 0.88rem;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  color: #1e2a55;
+}
+.menu-box button:hover {
+  background: #eef3ff;
+}
+
+/* 삭제 강조 */
+.menu-box .delete {
+  color: #c94848;
+}
+.menu-box .delete:hover {
+  background: #faeaea;
+}
+
+/* ===== 드롭다운 문서 ===== */
+.drop-files {
+  margin-top: 12px;
+  padding-left: 4px;
+}
+.drop-files li {
+  padding: 7px 0;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #e7e9f3;
+}
+
+/* 문서 없음 */
+.no-data {
+  font-size: 0.87rem;
+  color: #7a8197;
+}
+
+/* 전체 문서 카드 */
+.file-card {
+  background: #fff;
+  padding: 15px 18px;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.07);
+  font-size: 0.95rem;
+  border: 1px solid rgba(0,0,0,.04);
+}
+
+/* ===== 모달 ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 120px;
+  z-index: 9000;
+}
+
+.modal-box {
+  background: #fff;
+  padding: 28px 34px;
+  width: 340px;
+  border-radius: 12px;
+  animation: fadeIn 0.25s ease-out;
+  text-align: center;
+}
+
+.modal-box h4 {
+  margin: 0 0 12px;
+  color: #1a264d;
+}
+
+.modal-input {
+  width: 100%;
+  max-width: 300px; /* 너무 길지 않게 제한 */
+  margin: 14px auto; /* 중앙 정렬 */
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #cfd5e5;
+  font-size: 1rem;
+  display: block;
+}
+
+
+.modal-warning-text {
+  font-size: 0.88rem;
+  color: #555;
+  margin-top: 14px;
+}
+
+.modal-btn-wrap {
+  margin-top: 10px;
   display: flex;
   gap: 12px;
 }
 
-/* 공통 버튼 스타일 */
-.create-category-btn,
-.classify-btn {
-  padding: 10px 18px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  border: none;
+.cancel-btn,
+.confirm-btn {
+  flex: 1;
+  padding: 9px 0;
   border-radius: 8px;
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cancel-btn {
+  background: #d9d9d9;
+}
+
+.confirm-btn {
+  background: #2f65e3;
   color: #fff;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
 
-/* 카테고리 생성 버튼 */
-.create-category-btn {
-  background: linear-gradient(135deg, #007bff, #00a2ff);
-}
-.create-category-btn:hover {
-  background: linear-gradient(135deg, #0064d6, #0091e3);
-  transform: translateY(-2px);
+/* 삭제 경고 버튼 */
+.confirm-btn.delete {
+  background: #cc4f4f;
 }
 
-/* 분류하기 버튼 */
-.classify-btn {
-  background: linear-gradient(135deg, #28a745, #34d058);
-}
-.classify-btn:hover {
-  background: linear-gradient(135deg, #239b3f, #30c24f);
-  transform: translateY(-2px);
-}
-
-/* 카테고리 카드 리스트 */
-.category-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-
-.category-card {
-  width: 180px;
-  height: 120px;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 6px 15px rgba(0, 123, 255, 0.12);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: #333;
-  transition: 0.3s;
-  cursor: pointer;
-}
-
-.category-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 10px 25px rgba(0, 123, 255, 0.2);
-}
-
-.empty-text {
-  text-align: center;
-  color: #777;
-  font-size: 1rem;
-  margin-top: 40px;
+/* 등장 애니메이션 */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }

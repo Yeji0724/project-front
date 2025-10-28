@@ -1,10 +1,10 @@
-/* ===== 페이지 전체 ===== */
+/* 페이지 전체 */
 .directory-page {
   min-height: calc(100vh - 122px);
-  background: linear-gradient(135deg, #e8f0ff 0%, #f5f8ff 100%);
+  background: linear-gradient(135deg, #e8f0ff, #f5f8ff);
   padding: 80px 60px 60px;
-  box-sizing: border-box;
   animation: fadeIn 0.6s ease;
+  box-sizing: border-box;
 }
 
 /* 상단 헤더 */
@@ -12,225 +12,238 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: -20px;  
-  margin-bottom: 30px; 
+  margin-bottom: 30px;
 }
 
-/* 제목 스타일  */
 .directory-title {
-  font-size: 2.8rem;
+  font-size: 2.4rem;
   font-weight: 900;
-  color: #0066ff; /* 선명한 파란색 */
-  position: relative;
-  text-align: left;
-  margin-top: 10px;
-  margin-bottom: 35px;
-  letter-spacing: -0.5px;
-  text-shadow: none;
-  -webkit-text-fill-color: initial;
-  background: none;
+  color: #0066ff;
+  margin: 0;
 }
 
-/* 폴더 생성 버튼  */
+/* 안내 문구 */
+.guide-text {
+  font-size: 0.95rem;
+  color: #656d82;
+  margin: -8px 0 20px 2px;
+}
+
+
+/* 폴더 생성 버튼 */
 .create-folder-btn {
-  background: linear-gradient(135deg, #007bff, #00a2ff);
-  color: white;
+  background: #007bff;
+  color: #fff;
   border: none;
   border-radius: 10px;
-  padding: 12px 25px;
-  font-size: 1.1rem;
+  padding: 10px 22px;
+  font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 5px 14px rgba(0, 123, 255, 0.25);
-  margin-top: -5px;  
+  transition: 0.25s ease;
 }
-
 
 .create-folder-btn:hover {
-  background: linear-gradient(135deg, #0066e3, #0093f0);
+  background-color: #0066d6;
   transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0, 123, 255, 0.35);
 }
 
-/* ===== 폴더 목록 ===== */
+/* 폴더 목록 */
 .folder-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 40px;
-  justify-content: flex-start;
+  gap: 36px;
   padding-top: 10px;
 }
 
 /* 폴더 카드 */
 .folder-card {
-  background: linear-gradient(145deg, #ffffff, #f3f8ff);
+  background: #fff;
   border-radius: 18px;
   width: 200px;
   height: 170px;
-  box-shadow: 0 8px 18px rgba(0, 123, 255, 0.15);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  transition: all 0.25s ease;
   cursor: pointer;
   position: relative;
-  overflow: hidden;
+  transition: 0.25s ease;
 }
 
 .folder-card:hover {
-  transform: translateY(-8px) scale(1.03);
-  box-shadow: 0 12px 28px rgba(0, 123, 255, 0.25);
-  background: linear-gradient(145deg, #f9fbff, #eef4ff);
+  transform: translateY(-6px);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.12);
 }
 
 /* 폴더 아이콘 */
 .folder-icon {
-  font-size: 3.2rem;
-  margin-bottom: 12px;
-  transition: transform 0.3s ease;
-}
-
-.folder-card:hover .folder-icon {
-  transform: scale(1.1);
+  font-size: 3rem;
+  margin-bottom: 10px;
 }
 
 /* 폴더 이름 */
 .folder-name {
+  font-size: 1.05rem;
   font-weight: 700;
   color: #333;
   text-align: center;
-  font-size: 1.1rem;
   word-break: break-all;
+  max-width: 90%;
+}
+
+/* 세 점 메뉴 버튼 */
+.folder-menu-btn {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  font-size: 1.6rem;
+  cursor: pointer;
+  opacity: 0.75;
+  transition: opacity 0.2s;
+}
+
+.folder-menu-btn:hover {
+  opacity: 1;
+}
+
+/* 메뉴 박스 (CategoryPage와 동일) */
+.menu-box {
+  position: fixed;
+  width: 130px;
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #d9dcee;
+  box-shadow: 0 6px 18px rgba(0,0,0,.15);
+  overflow: hidden;
+  animation: fadeIn 0.2s ease-out;
+  z-index: 5000;
+}
+
+.menu-box button {
+  width: 100%;
+  padding: 11px 14px;
+  font-size: 0.88rem;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  color: #1e2a55;
+}
+
+.menu-box button:hover {
+  background: #eef3ff;
+}
+
+.menu-box .delete {
+  color: #c94848;
+}
+
+.menu-box .delete:hover {
+  background: #faeaea;
 }
 
 /* 폴더 없음 */
 .no-folder-text {
-  font-size: 1.1rem;
-  color: #666;
-  margin-top: 40px;
+  font-size: 1.05rem;
+  color: #555;
+  margin-top: 25px;
 }
 
-/* ===== 폴더 생성 모달 ===== */
+/* 모달 (CategoryPage와 완전 동일) */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.4);
+  inset: 0;
+  background: rgba(0,0,0,0.35);
   display: flex;
   justify-content: center;
-  align-items: center;
-  z-index: 1000;
+  align-items: flex-start;
+  padding-top: 120px;
+  z-index: 9000;
 }
 
 .modal-box {
   background: #fff;
-  border-radius: 16px;
-  padding: 40px 50px;
-  width: 430px;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25);
+  padding: 28px 34px;
+  width: 340px;
+  border-radius: 12px;
+  animation: fadeIn 0.25s ease-out;
   text-align: center;
-  animation: fadeInUp 0.3s ease;
 }
 
-.modal-box h3 {
-  margin-bottom: 20px;
-  font-size: 1.5rem;
-  color: #007bff;
+.modal-box h4 {
+  margin: 0 0 12px;
+  color: #1a264d;
 }
 
 .modal-input {
   width: 100%;
-  padding: 12px 14px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
+  max-width: 300px;
+  margin: 14px auto;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #cfd5e5;
   font-size: 1rem;
-  margin-bottom: 20px;
-  outline: none;
-  transition: all 0.2s ease;
+  display: block;
 }
 
-.modal-input:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 8px rgba(0, 123, 255, 0.25);
+.modal-warning-text {
+  font-size: 0.88rem;
+  color: #555;
+  margin-top: 14px;
 }
 
-.modal-buttons {
-  display: flex;
-  justify-content: space-around;
+.modal-btn-wrap {
   margin-top: 10px;
+  display: flex;
+  gap: 12px;
 }
 
 .cancel-btn,
 .confirm-btn {
-  padding: 10px 24px;
+  flex: 1;
+  padding: 9px 0;
+  border-radius: 8px;
   border: none;
-  border-radius: 10px;
-  cursor: pointer;
+  font-size: 0.9rem;
   font-weight: 700;
-  font-size: 1rem;
+  cursor: pointer;
 }
 
 .cancel-btn {
-  background-color: #ccc;
-  color: #333;
+  background: #d9d9d9;
 }
 
 .confirm-btn {
-  background-color: #007bff;
-  color: white;
-  box-shadow: 0 3px 10px rgba(0, 123, 255, 0.3);
+  background: #2f65e3;
+  color: #fff;
 }
 
-.confirm-btn:hover {
-  background-color: #0066d6;
-  transform: translateY(-2px);
+.confirm-btn.delete {
+  background: #cc4f4f;
 }
 
-/* ===== 애니메이션 ===== */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(15px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
+/* 애니메이션 */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* ===== 반응형 ===== */
+/* 반응형 */
 @media (max-width: 768px) {
-  .directory-title {
-    font-size: 2rem;
+  .directory-page {
+    padding: 60px 24px;
   }
-
   .folder-container {
     justify-content: center;
-    gap: 25px;
+    gap: 22px;
   }
-
   .folder-card {
-    width: 160px;
+    width: 150px;
     height: 140px;
   }
-
   .folder-icon {
-    font-size: 2.5rem;
+    font-size: 2.4rem;
   }
 }
-
