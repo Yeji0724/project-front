@@ -10,11 +10,26 @@ const UploadPage = () => {
   const [toast, setToast] = useState({ show: false, message: "" });
 
   const navigate = useNavigate();
+  const userId = 1;
 
   useEffect(() => {
-    const savedFolders = JSON.parse(localStorage.getItem("userFolders") || "[]");
-    setFolders(savedFolders);
-  }, []);
+    const fetchFolders = async () => {
+      try {
+        const response = await fetch(`http://localhost:8000/folders/${userId}`);
+        if (!response.ok) throw new Error("서버 응답 오류");
+        const data = await response.json();
+
+        // data가 { folders: [...] } 형태라면 아래처럼 처리
+        const folderList = data.folders || data; 
+        setFolders(folderList);
+        console.log(folderList)
+      } catch (error) {
+        console.error("폴더 목록 불러오기 실패:", error);
+      }
+    };
+
+    fetchFolders();
+  }, [userId]);
 
   const showToast = (message, callback) => {
     setToast({ show: true, message });
@@ -46,36 +61,62 @@ const UploadPage = () => {
     setShowFolderModal(true);
   };
 
-  const confirmFolderSelection = () => {
+  const confirmFolderSelection = async () => {
     if (!selectedFolder) {
       showToast("업로드할 폴더를 선택해주세요.");
       return;
     }
 
-    const categories = JSON.parse(
-      localStorage.getItem(`categories_${selectedFolder.name}`) || "[]"
-    );
+    try {
+      // ✅ 1️⃣ 파일 업로드 (FormData 생성)
+      const formData = new FormData();
+      formData.append("user_id", userId);
+      formData.append('folder_id', selectedFolder.folder_id);
+      files.forEach((file) => {
+        formData.append("files", file);
+      });
 
-    const hasCategory = categories.length > 0;
+      // ✅ 2️⃣ 업로드 요청 보내기
+      const uploadRes = await fetch(`http://localhost:8000/upload/`, {
+        method: "POST",
+        body: formData,
+      });
 
-    if (!hasCategory) {
-      showToast(
-        [
-          "카테고리가 없어 문서만 업로드됩니다.",
-          <br key="br1" />,
-          "카테고리를 생성한 후 분류하기를 눌러주세요."
-        ],
-        () => navigate(`/directory/${selectedFolder.name}`)
-      );
-    } else {
-      showToast(
-        "자동 분류가 적용됩니다!",
-        () => navigate(`/directory/${selectedFolder.name}`)
-      );
+      if (!uploadRes.ok) throw new Error("파일 업로드 실패");
+
+      console.log("✅ 파일 업로드 성공");
+
+      // ✅ 백엔드에서 카테고리 목록 가져오기
+      const res = await fetch(`http://localhost:8000/folders/${selectedFolder.folder_id}/category`);
+      if (!res.ok) throw new Error("카테고리 불러오기 실패");
+      const data = await res.json();
+      const categories = data.categories || [];
+
+      const hasCategory = categories.length > 0;
+
+      if (!hasCategory) {
+        showToast(
+          [
+            "카테고리가 없어 문서만 업로드됩니다.",
+            <br key="br1" />,
+            "카테고리를 생성한 후 분류하기를 눌러주세요.",
+          ],
+          () => navigate(`/directory/${selectedFolder.folder_id}`, { state: { folder: selectedFolder } })
+        );
+      } else {
+        showToast(
+          "자동 분류가 적용됩니다!",
+          () => navigate(`/directory/${selectedFolder.folder_id}`, { state: { folder: selectedFolder } })
+        );
+      }
+    } catch (err) {
+      console.error("카테고리 불러오기 오류:", err);
+      showToast("카테고리 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setShowFolderModal(false);
     }
-
-    setShowFolderModal(false);
   };
+
 
   return (
     <div className="upload-container">
@@ -118,11 +159,11 @@ const UploadPage = () => {
                   <div
                     key={idx}
                     className={`modal-folder-card ${
-                      selectedFolder?.name === folder.name ? "active" : ""
+                      selectedFolder?.folder_name === folder.folder_name ? "active" : ""
                     }`}
                     onClick={() => setSelectedFolder(folder)}
                   >
-                    📁 {folder.name}
+                    📁 {folder.folder_name}
                   </div>
                 ))
               )}
