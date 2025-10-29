@@ -13,16 +13,26 @@ function DirectoryPage() {
   const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
 
   const navigate = useNavigate();
+  const userId = 1;
 
   useEffect(() => {
-    const storedFolders = JSON.parse(localStorage.getItem("userFolders") || "[]");
+    const fetchFolders = async () => {
+      try {
+        const response = await fetch(`http://localhost:8000/folders/${userId}`);
+        if (!response.ok) throw new Error("서버 응답 오류");
+        const data = await response.json();
 
-    const sorted = storedFolders.sort(
-      (a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)
-    );
+        // data가 { folders: [...] } 형태라면 아래처럼 처리
+        const folderList = data.folders || data; 
+        setFolders(folderList);
+        console.log(folderList)
+      } catch (error) {
+        console.error("폴더 목록 불러오기 실패:", error);
+      }
+    };
 
-    setFolders(sorted);
-  }, []);
+    fetchFolders();
+  }, [userId]);
 
   const saveFolders = (updated) => {
     localStorage.setItem("userFolders", JSON.stringify(updated));
@@ -108,11 +118,11 @@ function DirectoryPage() {
     setSelectedFolderIndex(null);
   };
 
-  const handleOpenFolder = (folderName) => {
-    const index = folders.findIndex(f => f.name === folderName);
+  const handleOpenFolder = (folder) => {
+    const index = folders.findIndex(f => f.folder_id === folder.folder_id);
     updateTimestamp(index);
 
-    navigate(`/directory/${folderName}`);
+    navigate(`/directory/${folder.folder_id}`, { state: { folder: folder } });
   };
 
   return (
@@ -137,10 +147,10 @@ function DirectoryPage() {
             <div
               key={idx}
               className="folder-card"
-              onClick={() => handleOpenFolder(folder.name)}
+              onClick={() => handleOpenFolder(folder)}
             >
               <span className="folder-icon">📁</span>
-              <p className="folder-name">{folder.name}</p>
+              <p className="folder-name">{folder.folder_name}</p>
 
               <span
                 className="folder-menu-btn"
