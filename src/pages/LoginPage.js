@@ -46,7 +46,7 @@ function LoginPage({ setIsLoggedIn }) {
     }
 
     try {
-      const res = await axios.post("http://localhost:8000/auth/login", {
+      const res = await axios.post("http://localhost:8004/auth/login", {
         user_login_id: form.id,
         password: form.password,
       });

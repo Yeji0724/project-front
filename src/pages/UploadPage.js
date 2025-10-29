@@ -10,7 +10,7 @@ const UploadPage = () => {
   const [toast, setToast] = useState({ show: false, message: "" });
 
   const navigate = useNavigate();
-  const userId = 1;
+  const userId = Number(localStorage.getItem("userId"));
 
   useEffect(() => {
     const fetchFolders = async () => {
