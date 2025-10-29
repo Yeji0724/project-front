@@ -92,7 +92,7 @@ input[type="password"]::-webkit-textfield-decoration-container {
 .toggle-visibility {
   position: absolute;
   right: 12px;
-  top: 50%;
+  top: 43% !important;
   transform: translateY(-50%);
   background: none;
   border: none;
@@ -173,8 +173,8 @@ input[type="password"]::-webkit-textfield-decoration-container {
 .login-toast-popup {
   border-radius: 8px !important;
   padding: 8px 18px !important;
-  background: rgba(75, 107, 251, 0.95) !important;
-  color: #fff !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  color: #000000 !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
   animation: toast-fade 0.2s ease;
 }

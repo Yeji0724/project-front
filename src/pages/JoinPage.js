@@ -63,6 +63,8 @@ function JoinPage() {
   const handleJoin = async (e) => {
   e.preventDefault();
 
+  console.log("handleJoin 실행됨");
+
   const folderName =
     form.folder_name.trim() === "" ? "unknown" : form.folder_name.trim();
 
@@ -83,19 +85,14 @@ function JoinPage() {
   }
 
   try {
-    await axios.post("http://127.0.0.1:8000/auth/register", {
+    const res = await axios.post("http://127.0.0.1:8000/auth/register", {
       user_login_id: form.user_login_id,
       email: form.email,
       password: form.password,
+      folder_name: folderName,
     });
 
-    // 폴더 생성 (localStorage)
-    const existing = JSON.parse(localStorage.getItem("userFolders") || "[]");
-    const newFolder = { name: folderName, createdAt: Date.now() };
-    localStorage.setItem(
-      "userFolders",
-      JSON.stringify([newFolder, ...existing])
-    );
+    console.log("서버 응답: ", res.data);
 
     // 오른쪽 상단 알림
     const Toast = Swal.mixin({
@@ -115,7 +112,7 @@ function JoinPage() {
       html: `
         <div style="text-align:left; line-height:1.4;">
           <b>회원가입 완료!</b> 환영합니다 <b>${form.user_login_id}</b>님<br/>
-          <small style="opacity:0.9;">📁 ‘${folderName}’ 폴더가 생성되었습니다.</small>
+          <small style="opacity:0.9;">📁 '${folderName}' 폴더가 생성되었습니다.</small>
         </div>
       `,
     });

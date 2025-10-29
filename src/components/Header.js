@@ -38,8 +38,8 @@ const Header = ({ isLoggedIn, setIsLoggedIn }) => {
 
       {isLoggedIn ? (
         <nav className="nav-buttons">
-          <Link to="/upload" className="nav-link">문서 업로드</Link>
-          <Link to="/directory" className="nav-link">문서 분류</Link>
+          <Link to="/upload" className="nav-btn">문서 업로드</Link>
+          <Link to="/directory" className="nav-btn">문서 분류</Link>
           <button className="logout-btn" onClick={handleLogout}>
             로그아웃
           </button>

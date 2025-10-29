@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "../css/DirectoryPage.css";
 
 function DirectoryPage() {
@@ -13,42 +14,20 @@ function DirectoryPage() {
   const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
 
   const navigate = useNavigate();
-  const userId = 1;
+  const userId = Number(localStorage.getItem("userId"));
 
   useEffect(() => {
     const fetchFolders = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/folders/${userId}`);
-        if (!response.ok) throw new Error("서버 응답 오류");
-        const data = await response.json();
-
-        // data가 { folders: [...] } 형태라면 아래처럼 처리
-        const folderList = data.folders || data; 
-        setFolders(folderList);
-        console.log(folderList)
+        const response = await axios.get(`http://localhost:8000/folders/${userId}`);
+        setFolders(response.data.folders || []);
       } catch (error) {
         console.error("폴더 목록 불러오기 실패:", error);
       }
     };
 
-    fetchFolders();
+    if(userId) fetchFolders();
   }, [userId]);
-
-  const saveFolders = (updated) => {
-    localStorage.setItem("userFolders", JSON.stringify(updated));
-    setFolders([...updated]);
-  };
-
-  const updateTimestamp = (index) => {
-    const updated = [...folders];
-    updated[index].updatedAt = Date.now();
-
-    const sorted = updated.sort(
-      (a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)
-    );
-
-    saveFolders(sorted);
-  };
 
   const handleMenuToggle = (e, idx) => {
     e.stopPropagation();
@@ -58,60 +37,89 @@ function DirectoryPage() {
       left: rect.left - 100,
     });
     setMenuOpen(menuOpen === idx ? null : idx);
-  };
-
-  const handleCreateFolder = () => {
-    setModalType("create");
-    setNewFolderName("");
-    setSelectedFolderIndex(null);
-    setShowModal(true);
-  };
-
-  const handleRename = (idx) => {
-    setModalType("rename");
     setSelectedFolderIndex(idx);
-    setNewFolderName(folders[idx].name);
-    setShowModal(true);
-    setMenuOpen(null);
   };
 
-  const handleDelete = (idx) => {
-    setModalType("delete");
-    setSelectedFolderIndex(idx);
-    setShowModal(true);
-    setMenuOpen(null);
-  };
+  // DB - 폴더 생성
+  const handleCreateFolder = async () => {
+  if (!newFolderName.trim()) return;
 
-  const modalConfirm = () => {
-    let updated = [...folders];
+  try {
+    const res = await axios.post("http://localhost:8000/folders/", {
+      user_id: userId,
+      folder_name: newFolderName.trim()
+    });
 
-    if (modalType === "create") {
-      if (!newFolderName.trim()) return;
-      updated = [
-        { name: newFolderName.trim(), createdAt: Date.now(), updatedAt: Date.now() },
-        ...folders,
-      ];
-    }
+    const newFolder = {
+      folder_id: res.data.folder_id,
+      user_id: userId,
+      folder_name: newFolderName.trim(),
+      file_cnt: 0
+    };
 
-    if (modalType === "rename") {
-      if (!newFolderName.trim()) return;
-      updated[selectedFolderIndex].name = newFolderName.trim();
-      updated[selectedFolderIndex].updatedAt = Date.now();
-    }
+    setFolders([newFolder, ...folders]);
+    setShowModal(false);
 
-    if (modalType === "delete") {
-      const folderName = folders[selectedFolderIndex].name;
-      localStorage.removeItem(`categories_${folderName}`);
-      localStorage.removeItem(`files_${folderName}`);
+  } catch (error) {
+    console.error("폴더 생성 실패:", error);
+  }
+};
 
-      updated = folders.filter((_, i) => i !== selectedFolderIndex);
-    }
 
-    const sorted = updated.sort(
-      (a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)
+  // DB - 폴더 이름 수정
+  const handleRename = async (idx) => {
+  if (!newFolderName.trim()) return;
+  const folder = folders[idx];
+
+  try {
+    await axios.patch(
+      `http://localhost:8000/folders/${folder.folder_id}`,
+      { new_name: newFolderName.trim() }
     );
 
-    saveFolders(sorted);
+    // DB에서 최신 목록 다시 조회 & 정렬 반영
+    const res = await axios.get(`http://localhost:8000/folders/${userId}`);
+    const sorted = res.data.folders.sort(
+      (a, b) => new Date(b.last_work) - new Date(a.last_work)
+    );
+
+    setFolders(sorted);
+    setShowModal(false);
+    setMenuOpen(null);
+
+  } catch (error) {
+    console.error("폴더 이름 수정 실패:", error);
+  }
+};
+
+
+
+  // DB - 폴더 삭제
+  const handleDelete = async (idx) => {
+  const folder = folders[idx];
+
+  try {
+    await axios.delete(`http://localhost:8000/folders/${folder.folder_id}`);
+
+    setFolders(folders.filter((_, i) => i !== idx));
+    setShowModal(false);
+
+  } catch (error) {
+    console.error("폴더 삭제 실패:", error);
+  }
+};
+
+  // 모달 확인 동작
+  const modalConfirm = () => {
+    if (modalType === "create") {
+      handleCreateFolder();
+    } 
+    else if (modalType === "rename") {
+      handleRename(selectedFolderIndex);
+    } 
+    else if (modalType === "delete") {
+      handleDelete(selectedFolderIndex);
+    }
 
     setShowModal(false);
     setNewFolderName("");
@@ -119,9 +127,6 @@ function DirectoryPage() {
   };
 
   const handleOpenFolder = (folder) => {
-    const index = folders.findIndex(f => f.folder_id === folder.folder_id);
-    updateTimestamp(index);
-
     navigate(`/directory/${folder.folder_id}`, { state: { folder: folder } });
   };
 
@@ -129,12 +134,15 @@ function DirectoryPage() {
     <div className="directory-page" onClick={() => setMenuOpen(null)}>
       <div className="directory-header">
         <h2 className="directory-title">폴더 목록</h2>
-        <button className="create-folder-btn" onClick={handleCreateFolder}>
+        <button className="create-folder-btn" onClick={() => {
+          setModalType("create");
+          setNewFolderName("");
+          setShowModal(true);
+        }}>
           + 폴더 생성
         </button>
       </div>
 
-      {/* 추가된 안내 문구 */}
       <p className="guide-text">
         문서를 폴더별로 효율적으로 관리할 수 있습니다.
       </p>
@@ -169,8 +177,17 @@ function DirectoryPage() {
           style={{ top: menuPos.top, left: menuPos.left }}
           onClick={(e) => e.stopPropagation()}
         >
-          <button onClick={() => handleRename(menuOpen)}>수정</button>
-          <button className="delete" onClick={() => handleDelete(menuOpen)}>
+          <button onClick={() => {
+            setModalType("rename");
+            setNewFolderName(folders[menuOpen]?.folder_name || "");
+            setShowModal(true);
+          }}>
+            수정
+          </button>
+          <button className="delete" onClick={() => {
+            setModalType("delete");
+            setShowModal(true);
+          }}>
             삭제
           </button>
         </div>
@@ -183,24 +200,10 @@ function DirectoryPage() {
               <>
                 <h4>폴더를 삭제하시겠습니까?</h4>
                 <p className="modal-warning-text">되돌릴 수 없습니다.</p>
-
-                <div className="modal-btn-wrap">
-                  <button className="cancel-btn"
-                    onClick={() => setShowModal(false)}>
-                    취소
-                  </button>
-                  <button
-                    className="confirm-btn delete"
-                    onClick={modalConfirm}
-                  >
-                    삭제
-                  </button>
-                </div>
               </>
             ) : (
               <>
                 <h4>{modalType === "create" ? "새 폴더 생성" : "폴더 이름 수정"}</h4>
-
                 <input
                   type="text"
                   className="modal-input"
@@ -208,19 +211,19 @@ function DirectoryPage() {
                   value={newFolderName}
                   onChange={(e) => setNewFolderName(e.target.value)}
                 />
-
-                <div className="modal-btn-wrap">
-                  <button className="cancel-btn"
-                    onClick={() => setShowModal(false)}>
-                    취소
-                  </button>
-                  <button className="confirm-btn"
-                    onClick={modalConfirm}>
-                    확인
-                  </button>
-                </div>
               </>
             )}
+
+            <div className="modal-btn-wrap">
+              <button className="cancel-btn"
+                onClick={() => setShowModal(false)}>
+                취소
+              </button>
+              <button className="confirm-btn"
+                onClick={modalConfirm}>
+                {modalType === "delete" ? "삭제" : "확인"}
+              </button>
+            </div>
           </div>
         </div>
       )}

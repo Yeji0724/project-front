@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import Swal from "sweetalert2";
 import "../css/LoginPage.css";
 
 function LoginPage({ setIsLoggedIn }) {
@@ -51,11 +52,24 @@ function LoginPage({ setIsLoggedIn }) {
       });
 
       localStorage.setItem("token", res.data.token);
+      localStorage.setItem("userId", res.data.user_id);
       setIsLoggedIn(true);
-      navigate("/");
+
+      Swal.fire({
+        toast: true,
+        position: "top",
+        icon: "success",
+        showConfirmButton: false,
+        timer: 1800,
+        title: `${form.id}님 환영합니다!`,
+      });
+
+      setTimeout(() => navigate("/"), 900);
+
     } catch (err) {
       console.error("로그인 실패:", err.response?.data || err.message);
       setIsLoggedIn(false);
+
       setErrorMsg({
         id: "",
         password: "",
@@ -71,6 +85,7 @@ function LoginPage({ setIsLoggedIn }) {
           <h2 className="login-title">로그인</h2>
 
           <form className="login-form" onSubmit={handleLogin}>
+            
             {/* 아이디 */}
             <div className="input-group">
               <input
@@ -78,7 +93,7 @@ function LoginPage({ setIsLoggedIn }) {
                 name="id"
                 placeholder="아이디"
                 className={`login-input ${
-                  errorMsg.id || errorMsg.common ? "input-error" : ""
+                  errorMsg.common || errorMsg.id ? "input-error" : ""
                 }`}
                 value={form.id}
                 onChange={handleChange}
@@ -95,9 +110,7 @@ function LoginPage({ setIsLoggedIn }) {
                 type={showPassword ? "text" : "password"}
                 name="password"
                 placeholder="비밀번호"
-                className={`login-input ${
-                  errorMsg.password || errorMsg.common ? "input-error" : ""
-                }`}
+                className="login-input"
                 value={form.password}
                 onChange={handleChange}
                 required
@@ -107,7 +120,6 @@ function LoginPage({ setIsLoggedIn }) {
                   type="button"
                   className="toggle-visibility"
                   onClick={() => setShowPassword(!showPassword)}
-                  aria-label="비밀번호 보기"
                 >
                   {showPassword ? (
                     <svg
@@ -141,12 +153,6 @@ function LoginPage({ setIsLoggedIn }) {
                     </svg>
                   )}
                 </button>
-              )}
-
-              {(errorMsg.password || errorMsg.common) && (
-                <p className="error-text">
-                  {errorMsg.password || errorMsg.common}
-                </p>
               )}
             </div>
 
