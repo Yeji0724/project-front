@@ -6,11 +6,11 @@ import "../css/LoginPage.css";
 
 function LoginPage({ setIsLoggedIn }) {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ id: "", password: "" });
+  const [form, setForm] = useState({ user_login_id: "", user_password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState({
-    id: "",
-    password: "",
+    user_login_id: "",
+    user_password: "",
     common: "",
   });
 
@@ -30,29 +30,30 @@ function LoginPage({ setIsLoggedIn }) {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-    setErrorMsg({ id: "", password: "", common: "" });
+    setErrorMsg({ user_login_id: "", user_password: "", common: "" });
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    if (!form.id.trim()) {
-      setErrorMsg({ id: "아이디를 입력해주세요.", password: "", common: "" });
+    if (!form.user_login_id.trim()) {
+      setErrorMsg({ user_login_id: "아이디를 입력해주세요.", user_password: "", common: "" });
       return;
     }
-    if (!form.password.trim()) {
-      setErrorMsg({ id: "", password: "비밀번호를 입력해주세요.", common: "" });
+    if (!form.user_password.trim()) {
+      setErrorMsg({ user_login_id: "", user_password: "비밀번호를 입력해주세요.", common: "" });
       return;
     }
 
     try {
-      const res = await axios.post("http://localhost:8004/auth/login", {
-        user_login_id: form.id,
-        password: form.password,
+      const res = await axios.post("http://localhost:8000/auth/login", {
+        user_login_id: form.user_login_id,
+        user_password: form.user_password,
       });
 
       localStorage.setItem("token", res.data.token);
-      localStorage.setItem("userId", res.data.user_id);
+      localStorage.setItem("user_login_id", res.data.user_login_id);
+      localStorage.setItem("user_id", res.data.user_id);
       setIsLoggedIn(true);
 
       Swal.fire({
@@ -61,7 +62,7 @@ function LoginPage({ setIsLoggedIn }) {
         icon: "success",
         showConfirmButton: false,
         timer: 1800,
-        title: `${form.id}님 환영합니다!`,
+        title: `${form.user_login_id}님 환영합니다!`,
       });
 
       setTimeout(() => navigate("/"), 900);
@@ -71,8 +72,8 @@ function LoginPage({ setIsLoggedIn }) {
       setIsLoggedIn(false);
 
       setErrorMsg({
-        id: "",
-        password: "",
+        user_login_id: "",
+        user_password: "",
         common: "아이디 또는 비밀번호가 올바르지 않습니다.",
       });
     }
@@ -90,12 +91,12 @@ function LoginPage({ setIsLoggedIn }) {
             <div className="input-group">
               <input
                 type="text"
-                name="id"
+                name="user_login_id"
                 placeholder="아이디"
                 className={`login-input ${
                   errorMsg.common || errorMsg.id ? "input-error" : ""
                 }`}
-                value={form.id}
+                value={form.user_login_id}
                 onChange={handleChange}
                 required
               />
@@ -108,14 +109,14 @@ function LoginPage({ setIsLoggedIn }) {
             <div className="input-group">
               <input
                 type={showPassword ? "text" : "password"}
-                name="password"
+                name="user_password"
                 placeholder="비밀번호"
                 className="login-input"
-                value={form.password}
+                value={form.user_password}
                 onChange={handleChange}
                 required
               />
-              {form.password && (
+              {form.user_password && (
                 <button
                   type="button"
                   className="toggle-visibility"

@@ -25,7 +25,7 @@ function MainPage() {
     <div className="main-wrapper">
       <section className="main-container">
         <div className="main-content">
-          <h1 className="project-title">사이트이름</h1>
+          <h1 className="project-title">사이트이름 정해야해요</h1>
 
           <div className="main-box">
             <p className="main-subtext">

@@ -7,6 +7,10 @@ const Header = ({ isLoggedIn, setIsLoggedIn }) => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
+
+    localStorage.removeItem("token");
+    localStorage.removeItem("user_login_id");
+
     setIsLoggedIn(false);
 
     // 작게, 위쪽에 자동으로 사라지는 로그아웃 알림
@@ -32,7 +36,7 @@ const Header = ({ isLoggedIn, setIsLoggedIn }) => {
     <header className="navbar">
       <h1 className="site-title">
         <Link to="/" className="site-link">
-          사이트이름
+          사이트이름 도대체 뭘로
         </Link>
       </h1>
 

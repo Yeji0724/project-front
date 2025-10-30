@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import "../css/DirectoryPage.css";
 
@@ -14,20 +14,48 @@ function DirectoryPage() {
   const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
 
   const navigate = useNavigate();
-  const userId = Number(localStorage.getItem("userId"));
+  const location = useLocation();
+  const userId = Number(localStorage.getItem("user_id"));
+
+
+  const fetchFolders = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8000/folders/${userId}`);
+      const sorted = response.data.folders.sort(
+        (a, b) => new Date(b.last_work) - new Date(a.last_work)
+      );
+      setFolders(sorted);
+    } catch (error) {
+      console.error("폴더 목록 불러오기 실패:", error);
+    }
+  };
 
   useEffect(() => {
-    const fetchFolders = async () => {
-      try {
-        const response = await axios.get(`http://localhost:8000/folders/${userId}`);
-        setFolders(response.data.folders || []);
-      } catch (error) {
-        console.error("폴더 목록 불러오기 실패:", error);
+    if(userId) fetchFolders();
+  }, [userId]);
+
+  // CategoryPage에서 돌아올 때 강제 새로고침
+  useEffect(() => {
+    if (location.state?.refresh) {
+      fetchFolders();
+      // history 정리 (뒤로가기 누를 때 무한 새로고침 방지)
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+
+  // 카테고리 변경 감지
+  useEffect(() => {
+    const checkUpdate = () => {
+      const updated = localStorage.getItem("folder_updated");
+      if (updated) {
+        fetchFolders();
+        localStorage.removeItem("folder_updated");
       }
     };
 
-    if(userId) fetchFolders();
-  }, [userId]);
+    window.addEventListener("focus", checkUpdate);
+    return () => window.removeEventListener("focus", checkUpdate);
+  }, []);
 
   const handleMenuToggle = (e, idx) => {
     e.stopPropagation();
@@ -45,7 +73,7 @@ function DirectoryPage() {
   if (!newFolderName.trim()) return;
 
   try {
-    const res = await axios.post("http://localhost:8000/folders/", {
+    const res = await axios.post("http://localhost:8000/folders/create", {
       user_id: userId,
       folder_name: newFolderName.trim()
     });
@@ -73,7 +101,7 @@ function DirectoryPage() {
 
   try {
     await axios.patch(
-      `http://localhost:8000/folders/${folder.folder_id}`,
+      `http://localhost:8000/folders/${folder.folder_id}/rename`,
       { new_name: newFolderName.trim() }
     );
 

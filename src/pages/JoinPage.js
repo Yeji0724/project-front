@@ -7,7 +7,7 @@ import "../css/JoinPage.css";
 function JoinPage() {
   const [form, setForm] = useState({
     user_login_id: "",
-    password: "",
+    user_password: "",
     password_confirm: "",
     email: "",
     folder_name: "", // 가상 폴더 이름 (선택)
@@ -39,7 +39,7 @@ function JoinPage() {
     if (name === "user_login_id") {
       setValidation((p) => ({ ...p, idValid: regex.id.test(value) }));
     }
-    if (name === "password") {
+    if (name === "user_password") {
       setValidation((p) => ({
         ...p,
         pwValid: regex.pw.test(value),
@@ -49,7 +49,7 @@ function JoinPage() {
     if (name === "password_confirm") {
       setValidation((p) => ({
         ...p,
-        pwMatch: updatedForm.password === value,
+        pwMatch: updatedForm.user_password === value,
       }));
     }
     if (name === "email") {
@@ -61,68 +61,68 @@ function JoinPage() {
   };
 
   const handleJoin = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  console.log("handleJoin 실행됨");
+    console.log("handleJoin 실행됨");
 
-  const folderName =
-    form.folder_name.trim() === "" ? "unknown" : form.folder_name.trim();
+    const folderName =
+      form.folder_name.trim() === "" ? "unknown" : form.folder_name.trim();
 
-  if (
-    !validation.idValid ||
-    !validation.pwValid ||
-    !validation.pwMatch ||
-    !validation.emailValid
-  ) {
-    if (!validation.idValid)
-      return setErrorMsg("아이디는 영문+숫자 8~20자로 입력해주세요.");
-    if (!validation.pwValid)
-      return setErrorMsg("비밀번호는 영문+숫자 8~20자여야 합니다.");
-    if (!validation.pwMatch)
-      return setErrorMsg("비밀번호가 일치하지 않습니다.");
-    if (!validation.emailValid)
-      return setErrorMsg("유효한 이메일 형식이 아닙니다.");
-  }
+    if (
+      !validation.idValid ||
+      !validation.pwValid ||
+      !validation.pwMatch ||
+      !validation.emailValid
+    ) {
+      if (!validation.idValid)
+        return setErrorMsg("아이디는 영문+숫자 8~20자로 입력해주세요.");
+      if (!validation.pwValid)
+        return setErrorMsg("비밀번호는 영문+숫자 8~20자여야 합니다.");
+      if (!validation.pwMatch)
+        return setErrorMsg("비밀번호가 일치하지 않습니다.");
+      if (!validation.emailValid)
+        return setErrorMsg("유효한 이메일 형식이 아닙니다.");
+    }
 
-  try {
-    const res = await axios.post("http://127.0.0.1:8004/auth/register", {
-      user_login_id: form.user_login_id,
-      email: form.email,
-      password: form.password,
-      folder_name: folderName,
-    });
+    try {
+      const res = await axios.post("http://127.0.0.1:8000/auth/register", {
+        user_login_id: form.user_login_id,
+        email: form.email,
+        user_password: form.user_password, // ← 서버 스키마와 일치
+        folder_name: folderName,
+      });
 
-    console.log("서버 응답: ", res.data);
+      console.log("서버 응답: ", res.data);
 
-    // 오른쪽 상단 알림
-    const Toast = Swal.mixin({
-      toast: true,
-      position: "top", // 가운데 상단
-      showConfirmButton: false,
-      timer: 2000,
-      timerProgressBar: false,
-      customClass: {
-        popup: "login-toast-popup",
-        title: "login-toast-title",
-      },
-    });
+      // 오른쪽 상단 알림
+      const Toast = Swal.mixin({
+        toast: true,
+        position: "top", // 가운데 상단
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: false,
+        customClass: {
+          popup: "login-toast-popup",
+          title: "login-toast-title",
+        },
+      });
 
-    Toast.fire({
-      icon: "success",
-      html: `
+      Toast.fire({
+        icon: "success",
+        html: `
         <div style="text-align:left; line-height:1.4;">
           <b>회원가입 완료!</b> 환영합니다 <b>${form.user_login_id}</b>님<br/>
           <small style="opacity:0.9;">📁 '${folderName}' 폴더가 생성되었습니다.</small>
         </div>
       `,
-    });
+      });
 
-    // 로그인 페이지로 이동
-    setTimeout(() => (window.location.href = "/login"), 2200);
-  } catch {
-    setErrorMsg("이미 존재하는 아이디입니다.");
-  }
-};
+      // 로그인 페이지로 이동
+      setTimeout(() => (window.location.href = "/login"), 2200);
+    } catch {
+      setErrorMsg("이미 존재하는 아이디입니다.");
+    }
+  };
 
   return (
     <div className="join-page">
@@ -159,14 +159,14 @@ function JoinPage() {
             <div className="input-group">
               <input
                 type={showPassword ? "text" : "password"}
-                name="password"
+                name="user_password"
                 placeholder="비밀번호 (영문+숫자 8~20자)"
                 className="join-input"
-                value={form.password}
+                value={form.user_password}
                 onChange={handleChange}
                 required
               />
-              {form.password && (
+              {form.user_password && (        
                 <button
                   type="button"
                   className="toggle-visibility"
@@ -206,7 +206,7 @@ function JoinPage() {
                   )}
                 </button>
               )}
-              {form.password && (
+              {form.user_password && (              /* ← 조건 필드명 정정 */
                 <p
                   className={`validation-text ${
                     validation.pwValid ? "valid" : "invalid"

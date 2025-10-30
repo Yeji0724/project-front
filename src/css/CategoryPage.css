@@ -1,7 +1,7 @@
 /* ===== 전체 페이지 ===== */
 .category-page {
   min-height: calc(100vh - 122px);
-  background: #f4f6fd;
+  background: linear-gradient(135deg, #e8f0ff, #f5f8ff);
   padding: 45px 110px;
   animation: fadeIn 0.45s ease;
   font-family: "Pretendard", sans-serif;
@@ -26,16 +26,16 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 /* Finder 스타일 디렉토리 경로 표시 */
 .sync-path-box {
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: #eef3ff;
-  padding: 8px 14px;
+  gap: 10px;
+  background: #fff;
+  padding: 8px 27px;
   border-radius: 10px;
   font-size: 0.88rem;
   color: #1e2a55;
@@ -63,20 +63,84 @@
   color: #7e86a1;
 }
 
+/* 오른쪽 영역 전체 */
+.right-top {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
 /* 변경 버튼 */
 .edit-btn {
   margin-left: auto;
-  background: #0056ff;
+  background: #0156ff;
   border: none;
   color: #fff;
-  padding: 6px 12px;
+  padding: 7px 12px;
   border-radius: 8px;
   font-weight: 700;
-  font-size: 0.78rem;
+  font-size: 0.79rem;
   cursor: pointer;
 }
 .edit-btn:hover {
   background: #0046d1;
+}
+
+/* 새로고침 버튼 */
+.refresh-btn {
+  position: relative;
+  background: none;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+/* 아이콘만 회전 */
+.refresh-icon {
+  display: inline-block;
+  color: #3a3a3a;
+  font-size: 1.2em;
+  transition: transform 0.3s ease;
+}
+
+.refresh-btn:hover .refresh-icon {
+  transform: rotate(90deg);
+}
+
+/* 툴팁 (말풍선) */
+.refresh-btn::after {
+  content: "새로고침";
+  position: absolute;
+  top: 90%;
+  left: 48%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.92);
+  color: #000;
+  font-size: 0.75rem;
+  padding: 5px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* hover 시 말풍선 표시 */
+.refresh-btn:hover::after {
+  opacity: 1;
+  transform: translate(-50%, 4px);
+}
+
+/* hover 시 말풍선 표시 */
+.refresh-btn:hover::after {
+  opacity: 1;
+  transform: translate(-50%, 4px); /* 살짝 아래로 뜨는 애니메이션 */
 }
 
 
@@ -106,6 +170,7 @@
   gap: 10px;
 }
 .folder-actions button {
+  position: relative;
   padding: 10px 18px;
   border-radius: 10px;
   font-weight: 700;
@@ -117,8 +182,39 @@
 .folder-actions button:first-child {
   background: #007bff;
 }
+
+.folder-actions button:nth-child(2) {
+  background: #ff9800;
+}
+
 .folder-actions button:last-child {
   background: #28a745;
+}
+
+/* 툴팁 기본 */
+.folder-actions button::after {
+  content: attr(data-tip); /* data-tip 속성 내용 가져오기 */
+  position: absolute;
+  top: 110%; /* 버튼 바로 아래쪽 */
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.92);
+  color: #000;
+  font-size: 0.75rem;
+  padding: 5px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+  z-index: 2000;
+}
+
+/* hover 시 툴팁 표시 */
+.folder-actions button:hover::after {
+  opacity: 1;
+  transform: translate(-50%, 4px);
 }
 
 /* ===== 카테고리 리스트 ===== */
@@ -321,4 +417,55 @@
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px;
+  border-radius: 10px;
+  background: #f9faff;
+  border: 1px solid #e6eaf5;
+  margin-bottom: 8px;
+  transition: all 0.25s ease;
+}
+
+.file-item:hover {
+  background: #eef2ff;
+  transform: translateY(-1px);
+}
+
+.file-name {
+  flex: 2; /* 이름이 가장 넓은 비율 */
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #1d1d1d;
+  padding-left: 12px;
+}
+
+.file-type {
+  flex: 0.6; /* 파일 유형은 중간 */
+  text-align: center;
+  font-size: 0.85rem;
+  color: #5a67d8;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.download-btn {
+  flex: 0.2; /* 버튼은 작게 */
+  display: flex;
+  justify-content: flex-end;
+  background: none;
+  border: none;
+  color: #3b5bdb;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.download-btn:hover {
+  color: #1a33b3;
+  transform: translateY(2px);
 }

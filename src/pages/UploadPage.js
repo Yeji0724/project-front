@@ -10,7 +10,7 @@ const UploadPage = () => {
   const [toast, setToast] = useState({ show: false, message: "" });
 
   const navigate = useNavigate();
-  const userId = Number(localStorage.getItem("userId"));
+  const userId = Number(localStorage.getItem("user_id"));
 
   useEffect(() => {
     // const savedFolders = JSON.parse(localStorage.getItem("userFolders") || "[]");
