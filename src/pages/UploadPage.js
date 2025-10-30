@@ -13,6 +13,8 @@ const UploadPage = () => {
   const userId = Number(localStorage.getItem("userId"));
 
   useEffect(() => {
+    // const savedFolders = JSON.parse(localStorage.getItem("userFolders") || "[]");
+    // setFolders(savedFolders);
     const fetchFolders = async () => {
       try {
         const response = await fetch(`http://localhost:8000/folders/${userId}`);
@@ -70,14 +72,12 @@ const UploadPage = () => {
     try {
       // ✅ 1️⃣ 파일 업로드 (FormData 생성)
       const formData = new FormData();
-      formData.append("user_id", userId);
-      formData.append('folder_id', selectedFolder.folder_id);
       files.forEach((file) => {
         formData.append("files", file);
       });
 
       // ✅ 2️⃣ 업로드 요청 보내기
-      const uploadRes = await fetch(`http://localhost:8000/upload/`, {
+      const uploadRes = await fetch(`http://localhost:8000/files/upload/${userId}/${selectedFolder.folder_id}`, {
         method: "POST",
         body: formData,
       });
@@ -87,7 +87,7 @@ const UploadPage = () => {
       console.log("✅ 파일 업로드 성공");
 
       // ✅ 백엔드에서 카테고리 목록 가져오기
-      const res = await fetch(`http://localhost:8000/folders/${selectedFolder.folder_id}/category`);
+      const res = await fetch(`http://localhost:8000/folders/${selectedFolder.folder_id}/categories`);
       if (!res.ok) throw new Error("카테고리 불러오기 실패");
       const data = await res.json();
       const categories = data.categories || [];
