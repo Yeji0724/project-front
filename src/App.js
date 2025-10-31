@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import ProtectedRoute from "./components/ProtectedRoute";
+import PublicRoute from "./components/PublicRoute";
 import MainPage from "./pages/MainPage";
 import JoinPage from "./pages/JoinPage";
 import LoginPage from "./pages/LoginPage";
@@ -9,6 +11,7 @@ import UploadPage from "./pages/UploadPage";
 import DirectoryPage from "./pages/DirectoryPage";
 import SelectPage from "./pages/SelectPage"; 
 import CategoryPage from "./pages/CategoryPage";
+
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -69,13 +72,14 @@ function App() {
       <Header isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
       <Routes>
         {/* 로그인 시 선택 페이지로 이동 */}
-        <Route path="/" element={isLoggedIn ? <SelectPage /> : <MainPage />} />
-        <Route path="/join" element={<JoinPage />} />
-        <Route path="/login" element={<LoginPage setIsLoggedIn={setIsLoggedIn} />} />
-        <Route path="/upload" element={<UploadPage />} />
-        <Route path="/directory" element={<DirectoryPage />} />
-        <Route path="/select" element={<SelectPage />} />
-        <Route path="/directory/:folderId" element={<CategoryPage />} />
+        <Route path="/" element={<PublicRoute> <MainPage /> </PublicRoute>} />
+        <Route path="/join" element={<PublicRoute> <JoinPage /> </PublicRoute>} />
+        <Route path="/login" element={<PublicRoute> <LoginPage setIsLoggedIn={setIsLoggedIn} /> </PublicRoute>} />
+        <Route path="/upload" element={<ProtectedRoute> <UploadPage /> </ProtectedRoute>} />
+        <Route path="/directory" element={<ProtectedRoute> <DirectoryPage /> </ProtectedRoute>} />
+        <Route path="/select" element={<ProtectedRoute> <SelectPage /> </ProtectedRoute>} />
+        <Route path="/directory/:folderId" element={<ProtectedRoute> <CategoryPage /> </ProtectedRoute>} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <Footer />
     </>
