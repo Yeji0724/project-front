@@ -85,7 +85,7 @@ function JoinPage() {
     }
 
     try {
-      const res = await axios.post("http://127.0.0.1:8000/auth/register", {
+      const res = await axios.post("http://localhost:8000/auth/register", {
         user_login_id: form.user_login_id,
         email: form.email,
         user_password: form.user_password, // ← 서버 스키마와 일치
