@@ -11,8 +11,6 @@ const Header = ({ isLoggedIn, setIsLoggedIn }) => {
     localStorage.removeItem("token");
     localStorage.removeItem("user_login_id");
 
-    setIsLoggedIn(false);
-
     // 작게, 위쪽에 자동으로 사라지는 로그아웃 알림
     const Toast = Swal.mixin({
       toast: true,

@@ -65,8 +65,6 @@ function LoginPage({ setIsLoggedIn }) {
         title: `${form.user_login_id}님 환영합니다!`,
       });
 
-      setTimeout(() => navigate("/"), 900);
-
     } catch (err) {
       console.error("로그인 실패:", err.response?.data || err.message);
       setIsLoggedIn(false);

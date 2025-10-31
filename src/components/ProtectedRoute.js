@@ -1,73 +1,73 @@
 import React, { useEffect, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 
 const ProtectedRoute = ({ children }) => {
-  const [isAuthorized, setIsAuthorized] = useState(null); // null: 로딩, false: 접근불가
-  const navigate = useNavigate();
+  const [isAuthorized, setIsAuthorized] = useState(null);
   const userId = localStorage.getItem("user_id");
   const token = localStorage.getItem("token");
+  const location = useLocation();
 
   useEffect(() => {
     const verify = async () => {
-      if (!userId || !token) {
+      if (isAuthorized === false) {
+        return;
+      }
+      if (isAuthorized === null && (!userId || !token)) {
+        alert("로그인 후 이용해주세요.");
         setIsAuthorized(false);
         return;
       }
 
       try {
         const res = await fetch("http://localhost:8000/auth/verify", {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${token}`,
+                    user_id: userId
+                  },
         });
 
-        console.log(res)
-        if (!res.ok) {
-          throw new Error("유효하지 않은 토큰입니다.");
+        let data;
+        try {
+          data = await res.json();
+        } catch {
+          data = { detail: { error: "verify_failed" } };
         }
 
-        const data = await res.json();
+        if (!res.ok) {
+          throw { error: data.detail?.error || "verify_failed" };
+        }
+
         if (!data.valid || data.user_id !== Number(userId)) {
-          throw new Error("토큰 불일치");
+          throw { error: "invalid_key" };
         }
 
         setIsAuthorized(true);
       } catch (err) {
         console.error("ProtectedRoute 인증 실패:", err);
 
+        const errorType = err.error || "verify_failed";
+
+        if (errorType === "invalid_key") {
+          alert("인증이 유효하지 않습니다. 다시 로그인해주세요.");
+        } else if (errorType === "timeout") {
+          alert("마지막 활동으로부터 30분이 지났습니다. 다시 로그인해주세요.");
+        } else if (errorType === "jwt_error") {
+          alert("토큰에 이상이 발생했습니다. 다시 로그인해주세요.");
+        } else {
+          alert("인증이 만료되었거나 유효하지 않습니다. 다시 로그인해주세요.");
+        }
+
         // 로그아웃 처리
-        localStorage.removeItem("token");
-        localStorage.removeItem("user_id");
-        localStorage.removeItem("user_login_id");
-
-        // 폴더 관련 캐시 삭제
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (key && (key.startsWith("directoryPath_") || key.includes("folder_updated"))) {
-            localStorage.removeItem(key);
-            i--;
-          }
-        }
-
-        if (localStorage.getItem("folder_updated")) {
-          localStorage.removeItem("folder_updated");
-        }
-
-        alert("인증이 만료되었거나 유효하지 않습니다. 다시 로그인해주세요.");
+        localStorage.clear();
         setIsAuthorized(false);
       }
     };
 
     verify();
-  }, [userId, token]);
+  }, [userId, token, location.pathname]);
 
-  if (isAuthorized === null) {
-    // 검증 중 로딩 표시
-    return
-  }
+  if (isAuthorized === null) return <div>Loading...</div>;
 
-  if (!isAuthorized) {
-    // 접근 불가 시 메인페이지로 이동
-    return <Navigate to="/" replace />;
-  }
+  if (!isAuthorized) return <Navigate to="/" replace />;
 
   return children;
 };
