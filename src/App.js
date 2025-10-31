@@ -30,18 +30,33 @@ function App() {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (res.ok) {
-          setIsLoggedIn(true);
-        } else {
+        if (!res.ok) {
+          // 로그인 관련
           localStorage.removeItem("token");
           localStorage.removeItem("user_login_id");
           localStorage.removeItem("user_id");
+
+          // 폴더 관련 - 강제 삭제 (확실하게)
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && (key.startsWith("directoryPath_") || key.includes("folder_updated"))) {
+              localStorage.removeItem(key);
+              i--; // 삭제 후 인덱스 당겨지므로 조정
+            }
+          }
+
+          // 혹시 남은 폴더 캐시 있으면 추가로 클리어
+          if (localStorage.getItem("folder_updated")) {
+            localStorage.removeItem("folder_updated");
+          }
+
           setIsLoggedIn(false);
         }
+
       } catch (err) {
         console.error("토큰 검증 실패:", err);
-        setIsLoggedIn(false);
         localStorage.clear();
+        setIsLoggedIn(false);
       }
     };
 
