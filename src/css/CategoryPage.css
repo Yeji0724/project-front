@@ -35,7 +35,7 @@
   align-items: center;
   gap: 10px;
   background: #fff;
-  padding: 8px 27px;
+  padding: 8px 29px;
   border-radius: 10px;
   font-size: 0.88rem;
   color: #1e2a55;
@@ -309,6 +309,21 @@
 }
 .menu-box .delete:hover {
   background: #faeaea;
+}
+
+/*. 카테고리 다운로드 */
+.menu-box button.download {
+  color: #2853ca;
+  font-size: 0.83rem;
+  font-weight: 500;
+  margin-top: 4px;
+  padding-top: 8px;
+}
+
+/* hover 시 강조 */
+.menu-box button.download:hover {
+  background: #eff1f5;
+  color: #1f3da5;
 }
 
 /* ===== 드롭다운 문서 ===== */

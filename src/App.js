@@ -11,7 +11,8 @@ import SelectPage from "./pages/SelectPage";
 import CategoryPage from "./pages/CategoryPage";
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const token = localStorage.getItem("token");
+  const [isLoggedIn, setIsLoggedIn] = useState(!!token);
   const location = useLocation();
 
   useEffect(() => {

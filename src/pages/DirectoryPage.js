@@ -186,14 +186,23 @@ function DirectoryPage() {
               onClick={() => handleOpenFolder(folder)}
             >
               <span className="folder-icon">📁</span>
+
+              {/* 폴더 이름 */}
               <p className="folder-name">{folder.folder_name}</p>
 
-              <span
-                className="folder-menu-btn"
-                onClick={(e) => handleMenuToggle(e, idx)}
-              >
-                ⋮
-              </span>
+              {/* 파일 개수 표시 */}
+               <div className="folder-footer">
+                <span className="file-count-small">
+                  {folder.file_cnt ? `파일 ${folder.file_cnt}개` : "파일 0개"}
+                </span>
+
+                <div
+                  className="menu-dots"
+                  onClick={(e) => handleMenuToggle(e, idx)}
+                >
+                  <span></span><span></span><span></span>
+                </div>
+              </div>
             </div>
           ))
         )}

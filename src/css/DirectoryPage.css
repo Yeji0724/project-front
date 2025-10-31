@@ -67,6 +67,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  padding-top: 2px;
   cursor: pointer;
   position: relative;
   transition: 0.25s ease;
@@ -79,8 +80,8 @@
 
 /* 폴더 아이콘 */
 .folder-icon {
-  font-size: 3rem;
-  margin-bottom: 10px;
+  font-size: 2.1rem !important;
+  margin-bottom: 1px;
 }
 
 /* 폴더 이름 */
@@ -94,21 +95,32 @@
 }
 
 /* 세 점 메뉴 버튼 */
-.folder-menu-btn {
+.menu-dots {
   position: absolute;
-  right: 12px;
-  bottom: 12px;
-  font-size: 1.9rem;
+  right: 14px;
+  bottom: 0px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
   cursor: pointer;
   opacity: 0.75;
   transition: opacity 0.2s;
 }
 
-.folder-menu-btn:hover {
+.menu-dots:hover {
   opacity: 1;
 }
 
-/* 메뉴 박스 (CategoryPage와 동일) */
+.menu-dots span {
+  width: 4px;
+  height: 4px;
+  background-color: rgba(0, 0, 0, 0.6);
+  border-radius: 50%;
+}
+
+/* 메뉴 박스  */
 .menu-box {
   position: fixed;
   width: 130px;
@@ -142,6 +154,23 @@
 
 .menu-box .delete:hover {
   background: #faeaea;
+}
+
+/* 하단 중앙에 개수, 우측에 메뉴 */
+.folder-footer {
+  position: absolute;
+  bottom: 13px;
+  width: 100%;
+  display: flex;
+  justify-content: center; /* 중앙 정렬 */
+  align-items: center;
+}
+
+/* 문서 개수 텍스트 */
+.file-count-small {
+  font-size: 0.9rem;
+  color: rgba(80, 90, 110, 0.65);
+  font-weight: 500;
 }
 
 /* 폴더 없음 */

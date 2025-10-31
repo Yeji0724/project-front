@@ -13,7 +13,7 @@ const CategoryPage = () => {
 
   const [categories, setCategories] = useState([]);
   const [files, setFiles] = useState([]);
-  const [expandedCategory, setExpandedCategory] = useState(null);
+  const [expandedCategories, setExpandedCategories] = useState([]);
 
   const [menuOpen, setMenuOpen] = useState(null);
   const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
@@ -117,11 +117,17 @@ const CategoryPage = () => {
 
   const toggleCategory = async (index) => {
     if (menuOpen !== null) return;
-    if (expandedCategory === index) {
-      setExpandedCategory(null);
+
+    const categoryName = categories[index].name;
+    const isExpanded = expandedCategories.includes(index);
+
+    if (isExpanded) {
+      // 이미 열려 있으면 닫기
+      setExpandedCategories(expandedCategories.filter((i) => i !== index));
     } else {
-      setExpandedCategory(index);
-      await fetchFilesByCategory(categories[index].name, index);
+      // 새로 열기
+      setExpandedCategories([...expandedCategories, index]);
+      await fetchFilesByCategory(categoryName, index);
     }
   };
 
@@ -209,12 +215,29 @@ const CategoryPage = () => {
             className="refresh-btn"
             onClick={async (e) => {
               e.stopPropagation();
-              fetchCategories();
-              localStorage.setItem("folder_updated", Date.now());
 
-               if (expandedCategory !== null && categories[expandedCategory]) {
-                const currentCat = categories[expandedCategory].name;
-                await fetchFilesByCategory(currentCat, expandedCategory);
+              try {
+                // 폴더 활동 시간 갱신 API 호출
+                await axios.patch(`http://localhost:8000/folders/${folderId}/refresh`);
+
+                // DirectoryPage 새로고침 트리거
+                localStorage.setItem("folder_updated", Date.now());
+                window.dispatchEvent(new Event("focus"));
+
+                // 카테고리 다시 불러오기
+                await fetchCategories();
+
+                // 열려 있던 카테고리의 파일 다시 불러오기
+                if (expandedCategories.length > 0) {
+                  for (const idx of expandedCategories) {
+                    const currentCat = categories[idx]?.name;
+                    if (currentCat) {
+                      await fetchFilesByCategory(currentCat, idx);
+                    }
+                  }
+                }
+              } catch (err) {
+                console.error("새로고침 중 오류 발생:", err);
               }
             }}
           >
@@ -242,27 +265,6 @@ const CategoryPage = () => {
           {/* 전체 다운로드 버튼 */}
           <button
             data-tip="폴더 내 모든 문서를 다운로드합니다"
-            onClick={async () => {
-              try {
-                const res = await axios.get(
-                  `http://localhost:8000/folders/${folderId}/download-all`,
-                  { responseType: "blob" }  // ZIP 파일 받기
-                );
-
-                // 파일 다운로드 처리
-                const url = window.URL.createObjectURL(new Blob([res.data]));
-                const link = document.createElement("a");
-                link.href = url;
-                link.setAttribute("download", `${folderName}_전체파일.zip`);
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-                window.URL.revokeObjectURL(url);
-              } catch (err) {
-                console.error("전체 다운로드 실패:", err);
-                alert("전체 다운로드 중 오류가 발생했습니다.");
-              }
-            }}
           >
             전체 다운로드
           </button>
@@ -288,15 +290,16 @@ const CategoryPage = () => {
                     toggleCategory(idx);
                   }}
                 >
-                  {expandedCategory === idx ? "▲" : "▼"}
+                  {expandedCategories.includes(idx) ? "▲" : "▼"}
                 </span>
                 <span className="menu-btn" onClick={(e) => toggleMenu(e, idx)}>
                   ⋮
                 </span>
               </div>
             </div>
-
-            {expandedCategory === idx && (
+            
+            {/* 카테고리 안 문서 */}
+            {expandedCategories.includes(idx) && (
               <ul className="drop-files">
                 {cat.files && cat.files.length > 0 ? (
                   cat.files.map((file, fIdx) => (
@@ -305,25 +308,6 @@ const CategoryPage = () => {
                       <span className="file-type">{file.file_type?.toUpperCase()}</span>
                       <button
                         className="download-btn"
-                        onClick={async (e) => {
-                          e.stopPropagation();  
-                          try {
-                            const res = await axios.get(
-                              `http://localhost:8000/files/${file.file_id}`,
-                              { responseType: "blob" }
-                            );
-                            const url = window.URL.createObjectURL(new Blob([res.data]));
-                            const link = document.createElement("a");
-                            link.href = url;
-                            link.setAttribute("download", file.file_name);
-                            document.body.appendChild(link);
-                            link.click();
-                            link.remove();
-                            window.URL.revokeObjectURL(url);
-                          } catch (err) {
-                            console.error("다운로드 실패:", err);
-                          }
-                        }}
                       >
                         ⬇
                       </button>
@@ -391,9 +375,11 @@ const CategoryPage = () => {
           <button className="delete" onClick={() => handleDelete(menuOpen)}>
             삭제
           </button>
+          <button className="download">
+            카테고리 다운로드
+          </button>
         </div>
       )}
-      
     </div>
   );
 };
