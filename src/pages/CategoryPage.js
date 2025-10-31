@@ -27,6 +27,28 @@ const CategoryPage = () => {
 
   const [directoryPath, setDirectoryPath] = useState("");
 
+  // 백엔드에서 받아올 진행현황
+  const [progressStats, setProgressStats] = useState({
+    total: 0,
+    transform_done: 0,
+    classification_done: 0,
+    transform_pending: 0,
+    classification_pending: 0,
+    transform_rate: 0,
+    classification_rate: 0,
+  });
+
+  // 진행현황 불러오기
+  const fetchProgress = async () => {
+    try {
+      const res = await axios.get(`http://localhost:8000/folders/${folderId}/progress`);
+      setProgressStats(res.data);
+    } catch (err) {
+      console.error("진행현황 불러오기 실패:", err);
+    }
+  };
+
+
   // 카테고리 목록 불러오기
   const fetchCategories = async () => {
     try {
@@ -44,10 +66,23 @@ const CategoryPage = () => {
     }
   };
 
+  // 카테고리 없는 문서 불러오기
+  const fetchFilesWithoutCategory = async () => {
+    try {
+      const res = await axios.get(`http://localhost:8000/folders/${folderId}/files`);
+      const fetched = res.data.files || [];
+      setFiles(fetched);
+    } catch (err) {
+      console.error("카테고리 없는 파일 불러오기 실패:", err);
+    }
+  };
+  
   useEffect(() => {
     const storedPath = localStorage.getItem(`directoryPath_${folderName}`);
     if (storedPath) setDirectoryPath(storedPath);
     fetchCategories();
+    fetchFilesWithoutCategory();
+    fetchProgress();
   }, [folderName]);
 
   // 카테고리 생성
@@ -165,7 +200,6 @@ const CategoryPage = () => {
   }
 };
 
-
   return (
     <div className="category-page" onClick={() => setMenuOpen(null)}>
       <input
@@ -185,7 +219,7 @@ const CategoryPage = () => {
 
         <div className="right-top">
           <div className="sync-path-box">
-            <span className="folder-icon">📁</span>
+            <span className="folder-icon2">📁</span>
 
             {pathSegments.length > 0 ? (
               pathSegments.map((seg, idx) => (
@@ -224,8 +258,12 @@ const CategoryPage = () => {
                 localStorage.setItem("folder_updated", Date.now());
                 window.dispatchEvent(new Event("focus"));
 
-                // 카테고리 다시 불러오기
+                // 카테고리, 파일 다시 불러오기
                 await fetchCategories();
+                await fetchFilesWithoutCategory();
+
+                // 진행현황도 같이 새로고침
+                await fetchProgress();
 
                 // 열려 있던 카테고리의 파일 다시 불러오기
                 if (expandedCategories.length > 0) {
@@ -271,7 +309,18 @@ const CategoryPage = () => {
         </div>
       </div>
 
-      <p className="guide-text">
+      {/* 진행현황 표시줄 */}
+        <div className="progress-inline">
+          총 {progressStats.total}건 ·
+          <span className="waiting"> 추출 대기 {progressStats.transform_waiting}</span> /
+          <span className="pending"> 진행 {progressStats.transform_pending}</span> /
+          <span className="done"> 완료 {progressStats.transform_done}</span> ·
+          <span className="waiting"> 분류 대기 {progressStats.classification_waiting}</span> /
+          <span className="pending"> 진행 {progressStats.classification_pending}</span> /
+          <span className="done"> 완료 {progressStats.classification_done}</span>
+        </div>
+
+      <p className="guide-text2">
         {categories.length === 0
           ? "카테고리를 생성해 문서를 분류할 수 있습니다."
           : "카테고리를 펼쳐 문서를 확인할 수 있습니다."}
@@ -321,6 +370,22 @@ const CategoryPage = () => {
           </div>
         ))}
       </div>
+
+      {/*  카테고리가 없을 때 — 일반 파일 목록 표시 */}
+      {files.length > 0 && (
+        <div className="uncategorized-files">
+          <h3 className="uncat-title"> 분류되지 않은 문서 </h3>
+          <ul className="drop-files">
+            {files.map((file, idx) => (
+              <li key={idx} className="file-item">
+                <span className="file-name">{file.file_name}</span>
+                <span className="file-type">{file.file_type?.toUpperCase()}</span>
+                <button className="download-btn">⬇</button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {modal.show && (
         <div className="modal-overlay" onClick={() => setModal({ show: false })}>

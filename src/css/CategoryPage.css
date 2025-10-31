@@ -35,7 +35,7 @@
   align-items: center;
   gap: 10px;
   background: #fff;
-  padding: 8px 29px;
+  padding: 3px 29px;
   border-radius: 10px;
   font-size: 0.88rem;
   color: #1e2a55;
@@ -44,8 +44,9 @@
   overflow: hidden;
 }
 
-.folder-icon {
-  font-size: 1.1rem;
+.folder-icon2 {
+  font-size: 1.5rem;
+  margin-bottom: 5px;
 }
 
 .path-seg {
@@ -76,7 +77,7 @@
   background: #0156ff;
   border: none;
   color: #fff;
-  padding: 7px 12px;
+  padding: 6.8px 10px;
   border-radius: 8px;
   font-weight: 700;
   font-size: 0.79rem;
@@ -143,11 +144,11 @@
   transform: translate(-50%, 4px); /* 살짝 아래로 뜨는 애니메이션 */
 }
 
-
-.guide-text {
+/* 안내 문구 */
+.guide-text2 {
   font-size: 0.95rem;
   color: #656d82;
-  margin: -20px 0 22px;
+  margin: -46px 0 22px;
 }
 
 /* 폴더 상단 영역 */
@@ -216,6 +217,32 @@
   opacity: 1;
   transform: translate(-50%, 4px);
 }
+
+/* 진행현황 전체 박스 */
+.progress-inline {
+  font-size: 0.85rem;
+  color: #555;
+  position: relative; 
+  top: -12px;       
+  text-align: right;
+  opacity: 0.9;
+}
+
+/* 상태별 색상 */
+.progress-inline .waiting {
+  color: #888;
+}
+
+.progress-inline .pending {
+  color: #e69500;
+}
+
+.progress-inline .done {
+  color: #2b57d9;
+  font-weight: 600;
+}
+
+
 
 /* ===== 카테고리 리스트 ===== */
 .content-container {
@@ -339,7 +366,12 @@
 
 /* 문서 없음 */
 .no-data {
-  font-size: 0.87rem;
+  list-style: none;
+  border-bottom: none !important;
+  padding-left: 0;
+  margin-left: 0;
+  font-size: 0.8rem;
+  font-weight: 550;
   color: #7a8197;
 }
 
@@ -483,4 +515,20 @@
 .download-btn:hover {
   color: #1a33b3;
   transform: translateY(2px);
+}
+
+/* ===== 카테고리 없는 문서 표시 ===== */
+.uncategorized-files {
+  margin-top: 30px;
+  background: #fff;
+  border-radius: 14px;
+  padding: 18px 22px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.uncat-title {
+  font-size: 1.04rem;
+  font-weight: 800;
+  color: #2b3a75;
+  margin-bottom: 12px;
 }

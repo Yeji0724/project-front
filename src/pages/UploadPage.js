@@ -120,7 +120,7 @@ const UploadPage = () => {
 
   return (
     <div className="upload-container">
-      <h2 className="upload-title">파일 업로드</h2>
+      <h2 className="upload-title">문서 업로드</h2>
 
       <div
         className="upload-box"
