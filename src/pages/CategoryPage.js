@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import "../css/CategoryPage.css";
+import Swal from "sweetalert2";
 
 const CategoryPage = () => {
   const { folderId } = useParams();
@@ -14,6 +15,9 @@ const CategoryPage = () => {
   const [categories, setCategories] = useState([]);
   const [files, setFiles] = useState([]);
   const [expandedCategories, setExpandedCategories] = useState([]);
+  // 분류되지 않은 문서 드롭다운 상태
+  const [showUncategorized, setShowUncategorized] = useState(false);
+
 
   const [menuOpen, setMenuOpen] = useState(null);
   const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
@@ -69,7 +73,7 @@ const CategoryPage = () => {
   // 카테고리 없는 문서 불러오기
   const fetchFilesWithoutCategory = async () => {
     try {
-      const res = await axios.get(`http://localhost:8000/folders/${folderId}/files`);
+      const res = await axios.get(`http://localhost:8000/files/${folderId}/unclassified`);
       const fetched = res.data.files || [];
       setFiles(fetched);
     } catch (err) {
@@ -84,6 +88,16 @@ const CategoryPage = () => {
     fetchFilesWithoutCategory();
     fetchProgress();
   }, [folderName]);
+
+  // 진행현황 자동 갱신 (3초마다)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchProgress(); // 진행률만 새로 불러오기
+    }, 3000); // 3초마다 갱신
+
+    return () => clearInterval(interval); // 페이지 나가면 중단
+  }, [folderId]);
+
 
   // 카테고리 생성
   const handleCreateCategory = () => {
@@ -293,12 +307,82 @@ const CategoryPage = () => {
           >
             카테고리 생성
           </button>
-
+          
+          {/* 분류하기 버튼 */}
           <button
             data-tip="AI로 문서를 자동 분류합니다"
+            onClick={async () => {
+              try {
+                // 백엔드에서 분류 가능한 문서 개수 조회
+                const filesRes = await axios.get(`http://localhost:8000/folders/${folderId}/files`);
+                const files = filesRes.data.files || [];
+
+                // 분류되지 않은 파일만 계산
+                const unclassified = files.filter(
+                  (f) => f.is_transform === 2 && f.is_classification < 2
+                );
+
+                if (unclassified.length === 0) {
+                  Swal.fire({
+                    icon: "info",
+                    title: "분류할 문서가 없습니다",
+                    text: "모든 문서가 이미 분류 완료 상태입니다.",
+                    timer: 2000,
+                    showConfirmButton: false,
+                  });
+                  return;
+                }
+
+                // 분류 개수 안내창
+                const confirm = await Swal.fire({
+                  title: "AI 분류 시작",
+                  html: `총 <b>${files.length}</b>개 중 <b style="color:#0066ff;">${unclassified.length}</b>개의 문서를 분류합니다.<br>진행하시겠습니까?`,
+                  icon: "question",
+                  showCancelButton: true,
+                  confirmButtonText: "시작하기",
+                  cancelButtonText: "취소",
+                  reverseButtons: true,
+                });
+
+                if (!confirm.isConfirmed) return;
+
+                // 로딩 표시
+                Swal.fire({
+                  title: "분류 중...",
+                  text: "AI가 문서를 분석하고 있어요.",
+                  allowOutsideClick: false,
+                  didOpen: () => {
+                    Swal.showLoading();
+                  },
+                });
+
+                // 실제 분류 요청
+                const res = await axios.post(`http://localhost:8000/folders/${folderId}/classify`);
+
+                Swal.fire({
+                  icon: "success",
+                  title: "분류 요청 완료",
+                  text: `${unclassified.length}개의 파일이 분류 서버로 전달되었습니다.`,
+                  timer: 2000,
+                  showConfirmButton: false,
+                });
+
+                await fetchProgress(); // 진행률 즉시 갱신
+                await fetchFilesWithoutCategory();
+              } catch (err) {
+                console.error("분류 요청 실패:", err);
+                Swal.fire({
+                  icon: "error",
+                  title: "분류 실패",
+                  text: "분류 서버와 연결할 수 없습니다.",
+                });
+              }
+            }}
           >
             분류하기
           </button>
+
+
 
           {/* 전체 다운로드 버튼 */}
           <button
@@ -326,6 +410,7 @@ const CategoryPage = () => {
           : "카테고리를 펼쳐 문서를 확인할 수 있습니다."}
       </p>
 
+      {/* content-container */}
       <div className="content-container">
         {categories.map((cat, idx) => (
           <div key={idx} className="item-block">
@@ -346,7 +431,7 @@ const CategoryPage = () => {
                 </span>
               </div>
             </div>
-            
+
             {/* 카테고리 안 문서 */}
             {expandedCategories.includes(idx) && (
               <ul className="drop-files">
@@ -354,12 +439,96 @@ const CategoryPage = () => {
                   cat.files.map((file, fIdx) => (
                     <li key={fIdx} className="file-item">
                       <span className="file-name">{file.file_name}</span>
-                      <span className="file-type">{file.file_type?.toUpperCase()}</span>
-                      <button
-                        className="download-btn"
-                      >
-                        ⬇
-                      </button>
+                      <span className="file-type">
+                        {file.file_type?.toUpperCase()}
+                      </span>
+
+                      <div className="file-actions">
+                        {file.file_type?.toLowerCase() === "zip" && (
+                          <button
+                            className="unzip-btn"
+                            onClick={async () => {
+                              try {
+                                Swal.fire({
+                                  title: "압축 해제 중...",
+                                  text: "ZIP 파일의 내용을 추출하고 있어요.",
+                                  allowOutsideClick: false,
+                                  didOpen: () => Swal.showLoading(),
+                                });
+
+                                const res = await axios.post(
+                                  `http://localhost:8000/files/unzip/${folderId}/${file.file_id}`
+                                );
+
+                                Swal.fire({
+                                  icon: "success",
+                                  title: "압축 해제 완료!",
+                                  text: res.data.message,
+                                  timer: 2000,
+                                  showConfirmButton: false,
+                                });
+
+                                await fetchCategories();
+                                await fetchFilesWithoutCategory();
+                                await fetchProgress();
+                              } catch (err) {
+                                Swal.fire({
+                                  icon: "error",
+                                  title: "압축 해제 실패",
+                                  text: "ZIP 파일을 해제하는 중 오류가 발생했습니다.",
+                                });
+                              }
+                            }}
+                          >
+                            압축해제
+                          </button>
+                        )}
+
+                        <button className="download-btn">⬇</button>
+                        <button
+                          className="delete-btn"
+                          onClick={async () => {
+                            const confirm = await Swal.fire({
+                              title: "삭제하시겠어요?",
+                              text: `${file.file_name} 파일이 완전히 삭제됩니다.`,
+                              icon: "warning",
+                              showCancelButton: true,
+                              confirmButtonText: "삭제",
+                              cancelButtonText: "취소",
+                              confirmButtonColor: "#d33",
+                              cancelButtonColor: "#aaa",
+                            });
+
+                            if (!confirm.isConfirmed) return;
+
+                            try {
+                              await axios.delete(
+                                `http://localhost:8000/files/${file.file_id}`
+                              );
+                              Swal.fire({
+                                icon: "success",
+                                title: "삭제 완료",
+                                text: `${file.file_name}이 삭제되었습니다.`,
+                                timer: 1500,
+                                showConfirmButton: false,
+                              });
+
+                              await fetchCategories();
+                              await fetchFilesWithoutCategory();
+                              await fetchProgress();
+                            } catch (err) {
+                              console.error("파일 삭제 실패:", err);
+                              Swal.fire({
+                                icon: "error",
+                                title: "삭제 실패",
+                                text: "서버에서 파일 삭제 중 오류가 발생했습니다.",
+                              });
+                            }
+                          }}
+                        >
+                          ✖
+                        </button>
+                      </div>
                     </li>
                   ))
                 ) : (
@@ -369,23 +538,127 @@ const CategoryPage = () => {
             )}
           </div>
         ))}
-      </div>
 
-      {/*  카테고리가 없을 때 — 일반 파일 목록 표시 */}
-      {files.length > 0 && (
-        <div className="uncategorized-files">
-          <h3 className="uncat-title"> 분류되지 않은 문서 </h3>
-          <ul className="drop-files">
-            {files.map((file, idx) => (
-              <li key={idx} className="file-item">
-                <span className="file-name">{file.file_name}</span>
-                <span className="file-type">{file.file_type?.toUpperCase()}</span>
-                <button className="download-btn">⬇</button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+        {/* 구분선 */}
+        {files.length > 0 && <div className="divider-line"></div>}
+
+        {/* 분류되지 않은 문서 */}
+        {files.length > 0 && (
+          <div className="item-block">
+            <div
+              className="item-header"
+              onClick={() => setShowUncategorized(!showUncategorized)}
+            >
+              <span className="cat-name">분류되지 않은 문서</span>
+              <div className="right-icons">
+                <span className="arrow">
+                  {showUncategorized ? "▲" : "▼"}
+                </span>
+              </div>
+            </div>
+
+            {showUncategorized && (
+              <ul className="drop-files">
+                {files.map((file, idx) => (
+                  <li key={idx} className="file-item">
+                    <span className="file-name">{file.file_name}</span>
+                    <span className="file-type">
+                      {file.file_type?.toUpperCase()}
+                    </span>
+
+                    <div className="file-actions">
+                      {file.file_type?.toLowerCase() === "zip" && (
+                        <button
+                          className="unzip-btn"
+                          onClick={async () => {
+                            try {
+                              Swal.fire({
+                                title: "압축 해제 중...",
+                                text: "ZIP 파일의 내용을 추출하고 있어요.",
+                                allowOutsideClick: false,
+                                didOpen: () => Swal.showLoading(),
+                              });
+
+                              const res = await axios.post(
+                                `http://localhost:8000/files/unzip/${folderId}/${file.file_id}`
+                              );
+
+                              Swal.fire({
+                                icon: "success",
+                                title: "압축 해제 완료!",
+                                text: res.data.message,
+                                timer: 2000,
+                                showConfirmButton: false,
+                              });
+
+                              await fetchCategories();
+                              await fetchFilesWithoutCategory();
+                              await fetchProgress();
+                            } catch (err) {
+                              Swal.fire({
+                                icon: "error",
+                                title: "압축 해제 실패",
+                                text: "ZIP 파일을 해제하는 중 오류가 발생했습니다.",
+                              });
+                            }
+                          }}
+                        >
+                          압축해제
+                        </button>
+                      )}
+
+                      <button className="download-btn">⬇</button>
+                      <button
+                        className="delete-btn"
+                        onClick={async () => {
+                          const confirm = await Swal.fire({
+                            title: "삭제하시겠어요?",
+                            text: `${file.file_name} 파일이 완전히 삭제됩니다.`,
+                            icon: "warning",
+                            showCancelButton: true,
+                            confirmButtonText: "삭제",
+                            cancelButtonText: "취소",
+                            confirmButtonColor: "#d33",
+                            cancelButtonColor: "#aaa",
+                          });
+
+                          if (!confirm.isConfirmed) return;
+
+                          try {
+                            await axios.delete(
+                              `http://localhost:8000/files/${file.file_id}`
+                            );
+                            Swal.fire({
+                              icon: "success",
+                              title: "삭제 완료",
+                              text: `${file.file_name}이 삭제되었습니다.`,
+                              timer: 1500,
+                              showConfirmButton: false,
+                            });
+
+                            await fetchCategories();
+                            await fetchFilesWithoutCategory();
+                            await fetchProgress();
+                          } catch (err) {
+                            console.error("파일 삭제 실패:", err);
+                            Swal.fire({
+                              icon: "error",
+                              title: "삭제 실패",
+                              text: "서버에서 파일 삭제 중 오류가 발생했습니다.",
+                            });
+                          }
+                        }}
+                      >
+                        ✖
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+      </div>
 
       {modal.show && (
         <div className="modal-overlay" onClick={() => setModal({ show: false })}>

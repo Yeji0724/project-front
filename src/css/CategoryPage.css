@@ -226,6 +226,7 @@
   top: -12px;       
   text-align: right;
   opacity: 0.9;
+  transition: all 0.3s ease;
 }
 
 /* 상태별 색상 */
@@ -466,10 +467,11 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* ===== 파일 아이템 (ZIP 흔들림 방지 완전판) ===== */
 .file-item {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 70px 200px; /* 이름 | 타입 | 버튼 */
   align-items: center;
-  justify-content: space-between;
   padding: 10px 18px;
   border-radius: 10px;
   background: #f9faff;
@@ -483,16 +485,19 @@
   transform: translateY(-1px);
 }
 
+/* 파일 이름 */
 .file-name {
-  flex: 2; /* 이름이 가장 넓은 비율 */
   font-weight: 600;
   font-size: 0.95rem;
   color: #1d1d1d;
   padding-left: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
+/* 파일 타입 */
 .file-type {
-  flex: 0.6; /* 파일 유형은 중간 */
   text-align: center;
   font-size: 0.85rem;
   color: #5a67d8;
@@ -500,21 +505,75 @@
   text-transform: uppercase;
 }
 
-.download-btn {
-  flex: 0.2; /* 버튼은 작게 */
+/* 파일 액션 (압축해제 + 다운로드) */
+.file-actions {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  min-width: 180px;
+  flex-wrap: nowrap;
+}
+
+/* 압축 해제 버튼 */
+.unzip-btn {
+  background-color: #eef3ff;
+  border: 1px solid #cdd3f8;
+  color: #2c46c7;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.unzip-btn:hover {
+  background-color: #dce4ff;
+  border-color: #b7c0f3;
+  color: #1c2fa5;
+  transform: translateY(-1px);
+}
+
+/* 다운로드 버튼 */
+.download-btn {
   background: none;
   border: none;
   color: #3b5bdb;
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   cursor: pointer;
-  transition: color 0.2s ease, transform 0.2s ease;
+  transition: color 0.25s ease, transform 0.25s ease;
+  padding: 5px 8px;
 }
 
 .download-btn:hover {
   color: #1a33b3;
   transform: translateY(2px);
+}
+
+/* 삭제 버튼 */
+.delete-btn {
+  background: none;
+  border: none;
+  color: #b0b0b0;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.2s ease;
+  margin-right: 6px;
+}
+
+.delete-btn:hover {
+  color: #d33;
+  transform: scale(1.15);
+}
+
+/* 카테고리와 분류되지 않은 문서 사이 구분선 */
+.divider-line {
+  width: 100%;
+  height: 1px;
+  background-color: #dcdfe6; /* 은은한 회색 */
+  margin: 28px 0 20px; /* 위쪽 여백 크게 */
+  opacity: 0.7;
 }
 
 /* ===== 카테고리 없는 문서 표시 ===== */
@@ -532,3 +591,40 @@
   color: #2b3a75;
   margin-bottom: 12px;
 }
+
+/* 압축 해제 버튼 */
+.unzip-btn {
+  background-color: #eef3ff;
+  border: 1px solid #cdd3f8;
+  color: #2c46c7;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.unzip-btn:hover {
+  background-color: #dce4ff;
+  border-color: #b7c0f3;
+  color: #1c2fa5;
+  transform: translateY(-1px);
+}
+
+/* ⬇ 다운로드 버튼 재정렬 (압축해제와 간격 조정) */
+.download-btn {
+  background: none;
+  border: none;
+  color: #3b5bdb;
+  font-size: 1.15rem;
+  cursor: pointer;
+  transition: color 0.25s ease, transform 0.25s ease;
+  padding: 5px 8px;
+}
+
+.download-btn:hover {
+  color: #1a33b3;
+  transform: translateY(2px);
+}
+
