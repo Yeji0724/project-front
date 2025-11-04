@@ -89,16 +89,6 @@ const CategoryPage = () => {
     fetchProgress();
   }, [folderName]);
 
-  // 진행현황 자동 갱신 (3초마다)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetchProgress(); // 진행률만 새로 불러오기
-    }, 3000); // 3초마다 갱신
-
-    return () => clearInterval(interval); // 페이지 나가면 중단
-  }, [folderId]);
-
-
   // 카테고리 생성
   const handleCreateCategory = () => {
     setModal({ show: true, type: "create", index: null, value: "" });
@@ -201,18 +191,86 @@ const CategoryPage = () => {
 
   // 카테고리별 문서
   const fetchFilesByCategory = async (categoryName, index) => {
-  try {
-    const res = await axios.get(
-      `http://localhost:8000/folders/${folderId}/categories/${encodeURIComponent(categoryName)}/files`
-    );
+    try {
+      const res = await axios.get(
+        `http://localhost:8000/folders/${folderId}/categories/${encodeURIComponent(categoryName)}/files`
+      );
 
-    const updated = [...categories];
-    updated[index].files = res.data.files;
-    setCategories(updated);
-  } catch (err) {
-    console.error("문서 목록 불러오기 실패:", err);
-  }
-};
+      const updated = [...categories];
+      updated[index].files = res.data.files;
+      setCategories(updated);
+    } catch (err) {
+      console.error("문서 목록 불러오기 실패:", err);
+    }
+  };
+
+  // 전체 다운로드 
+  const handleDownloadFolder = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8000/folders/download/${folderId}`,
+        { responseType: "blob" }
+      );
+
+      const blob = new Blob([response.data], { type: "application/zip" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${folderName}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("폴더 다운로드 실패:", err);
+    }
+  };
+
+  // 카테고리별 다운로드 
+  const handleDownloadCategory = async (categoryName) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8000/folders/download/category/${folderId}/${encodeURIComponent(categoryName)}`,
+        { responseType: "blob" }
+      );
+
+      const blob = new Blob([response.data], { type: "application/zip" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${categoryName}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("카테고리 다운로드 실패:", err);
+    }
+  };
+
+  // 개별 파일 다운로드
+  const handleDownloadFile = async (fileId, fileName) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8000/folders/download/file/${fileId}`,
+        { responseType: "blob" }
+      );
+
+      const blob = new Blob([response.data], { type: "application/octet-stream" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("파일 다운로드 실패:", err);
+    }
+  };
+
+
 
   return (
     <div className="category-page" onClick={() => setMenuOpen(null)}>
@@ -387,6 +445,7 @@ const CategoryPage = () => {
           {/* 전체 다운로드 버튼 */}
           <button
             data-tip="폴더 내 모든 문서를 다운로드합니다"
+            onClick={() => handleDownloadFolder()}
           >
             전체 다운로드
           </button>
@@ -484,7 +543,13 @@ const CategoryPage = () => {
                           </button>
                         )}
 
-                        <button className="download-btn">⬇</button>
+                        <button 
+                          className="download-btn"
+                          onClick={() => handleDownloadFile(file.file_id, file.file_name)}
+                        >
+                          ⬇
+                        </button>
+
                         <button
                           className="delete-btn"
                           onClick={async () => {
@@ -607,7 +672,13 @@ const CategoryPage = () => {
                         </button>
                       )}
 
-                      <button className="download-btn">⬇</button>
+                      <button 
+                        className="download-btn"
+                        onClick={() => handleDownloadFile(file.file_id, file.file_name)}
+                      >
+                        ⬇
+                      </button>
+
                       <button
                         className="delete-btn"
                         onClick={async () => {
@@ -703,21 +774,28 @@ const CategoryPage = () => {
         </div>
       )}
 
-      {menuOpen !== null && (
-        <div
-          className="menu-box"
-          style={{ top: menuPos.top, left: menuPos.left }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <button onClick={() => handleRename(menuOpen)}>수정</button>
-          <button className="delete" onClick={() => handleDelete(menuOpen)}>
-            삭제
-          </button>
-          <button className="download">
-            카테고리 다운로드
-          </button>
-        </div>
-      )}
+      {menuOpen !== null && (() => {
+        const cat = categories[menuOpen];
+        if (!cat) return null;
+        return (
+          <div
+            className="menu-box"
+            style={{ top: menuPos.top, left: menuPos.left }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button onClick={() => handleRename(menuOpen)}>수정</button>
+            <button className="delete" onClick={() => handleDelete(menuOpen)}>
+              삭제
+            </button>
+            <button
+              className="download"
+              onClick={() => handleDownloadCategory(cat.name)}
+            >
+              카테고리 다운로드
+            </button>
+          </div>
+        );
+      })()}
     </div>
   );
 };
