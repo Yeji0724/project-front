@@ -377,7 +377,7 @@ const CategoryPage = () => {
 
                 // 분류되지 않은 파일만 계산
                 const unclassified = files.filter(
-                  (f) => f.is_transform === 2 && f.is_classification === 2 && f.cateory === null
+                  (f) => f.is_transform === 2 && f.is_classification === 2 && f.category === null
                 );
 
                 if (unclassified.length === 0) {
