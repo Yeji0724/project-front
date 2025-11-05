@@ -4,6 +4,18 @@ import axios from "axios";
 import "../css/CategoryPage.css";
 import Swal from "sweetalert2";
 
+const Toast = Swal.mixin({
+  toast: true,
+  position: "top",
+  showConfirmButton: false,
+  timer: 3000,
+  timerProgressBar: false,
+  customClass: {
+    popup: "login-toast-popup",
+    title: "login-toast-title",
+  },
+});
+
 const CategoryPage = () => {
   const { folderId } = useParams();
   const navigate = useNavigate();
@@ -29,18 +41,17 @@ const CategoryPage = () => {
     value: "",
   });
 
-  const [directoryPath, setDirectoryPath] = useState("");
-
   // 백엔드에서 받아올 진행현황
   const [progressStats, setProgressStats] = useState({
     total: 0,
-    transform_done: 0,
-    classification_done: 0,
+    transform_waiting: 0,
     transform_pending: 0,
+    transform_done: 0,
+    classification_waiting: 0,
     classification_pending: 0,
-    transform_rate: 0,
-    classification_rate: 0,
+    classification_done: 0,
   });
+
 
   // 진행현황 불러오기
   const fetchProgress = async () => {
@@ -53,22 +64,43 @@ const CategoryPage = () => {
   };
 
 
-  // 카테고리 목록 불러오기
+  // 카테고리 목록 불러오기 (문서 포함 버전)
   const fetchCategories = async () => {
     try {
+      // 카테고리 목록 가져오기
       const res = await axios.get(
         `http://localhost:8000/folders/${folderId}/categories`
       );
-      const data = res.data.categories.map((name) => ({
+      const names = res.data.categories || [];
+
+      // 카테고리 기본 구조 세팅
+      const categoryData = names.map((name) => ({
         name,
         updatedAt: Date.now(),
         files: [],
       }));
-      setCategories(data);
+
+      // 각 카테고리별 문서 목록 불러오기
+      await Promise.all(
+        categoryData.map(async (cat, idx) => {
+          try {
+            const filesRes = await axios.get(
+              `http://localhost:8000/folders/${folderId}/categories/${encodeURIComponent(cat.name)}/files`
+            );
+            categoryData[idx].files = filesRes.data.files || [];
+          } catch (err) {
+            console.warn(`⚠ ${cat.name} 파일 불러오기 실패:`, err);
+          }
+        })
+      );
+
+      //  한 번에 갱신
+      setCategories([...categoryData]);
     } catch (err) {
       console.error("카테고리 불러오기 실패:", err);
     }
   };
+
 
   // 카테고리 없는 문서 불러오기
   const fetchFilesWithoutCategory = async () => {
@@ -80,10 +112,18 @@ const CategoryPage = () => {
       console.error("카테고리 없는 파일 불러오기 실패:", err);
     }
   };
+
+  const refreshAll = async (delay = 300) => {
+    // DB 커밋 타이밍 맞춰 잠깐 대기
+    await new Promise((r) => setTimeout(r, delay));
+
+    // 최신 데이터로 한 번에 갱신
+    await fetchCategories();
+    await fetchFilesWithoutCategory();
+    await fetchProgress();
+  };
   
   useEffect(() => {
-    const storedPath = localStorage.getItem(`directoryPath_${folderName}`);
-    if (storedPath) setDirectoryPath(storedPath);
     fetchCategories();
     fetchFilesWithoutCategory();
     fetchProgress();
@@ -105,7 +145,7 @@ const CategoryPage = () => {
     setMenuOpen(null);
   };
 
-  // 카테고리 삭제
+  // 카테고리 삭제 (파일은 '분류되지 않은 문서'로 이동)
   const handleDelete = (index) => {
     setModal({
       show: true,
@@ -125,6 +165,12 @@ const CategoryPage = () => {
           `http://localhost:8000/folders/${folderId}/categories`,
           { category_name: modal.value.trim() }
         );
+
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
+        // 최신 목록 불러오기
+        await refreshAll(200);
+
       }
 
       if (modal.type === "rename") {
@@ -135,17 +181,59 @@ const CategoryPage = () => {
           )}`,
           { new_name: modal.value.trim() }
         );
+
+        await new Promise((resolve) => setTimeout(resolve, 300));
+
+        // 최신 목록 불러오기
+        await refreshAll(200);
+
       }
 
-      if (modal.type === "delete") {
-        await axios.delete(
-          `http://localhost:8000/folders/${folderId}/categories/${encodeURIComponent(
-            categories[modal.index].name
-          )}`
-        );
-      }
+        if (modal.type === "delete") {
+          try {
+            const targetName = categories[modal.index]?.name;
 
-      await fetchCategories();
+            await axios.delete(
+              `http://localhost:8000/folders/${folderId}/categories/${encodeURIComponent(targetName)}`
+            );
+
+            // UI 즉시 반영 (해당 카테고리 제거)
+            setCategories((prev) => prev.filter((_, i) => i !== modal.index));
+
+            // '분류되지 않은 문서' 갱신 + 자동 펼치기
+            await fetchFilesWithoutCategory();
+            setShowUncategorized(true);
+
+            // 진행현황 갱신
+            await fetchProgress();
+
+            // 알림 (조금 오래)
+            Toast.fire({
+              icon: "success",
+              html: `
+                <div style="text-align:left; line-height:1.4;">
+                  <b>카테고리 삭제 완료!</b><br/>
+                  <small>'${targetName}' 카테고리가 삭제되었으며,<br/>
+                  포함된 문서들은 <b>분류되지 않은 문서</b>로 이동했습니다.</small>
+                </div>
+              `,
+              timer: 5000
+            });
+          } catch (err) {
+            console.error("카테고리 삭제 실패:", err);
+            Toast.fire({
+              icon: "error",
+              html: `
+                <div style="text-align:left; line-height:1.4;">
+                  <b>삭제 실패!</b><br/>
+                  <small>서버에서 카테고리 삭제 중 오류가 발생했습니다.</small>
+                </div>
+              `,
+              timer: 5000
+            });
+          }
+        }
+
       localStorage.setItem("folder_updated", Date.now());     // 디렉토리 갱신
       window.dispatchEvent(new Event("focus"));
       setModal({ show: false, type: "", index: null, value: "" });
@@ -177,18 +265,6 @@ const CategoryPage = () => {
     setMenuOpen(menuOpen === index ? null : index);
   };
 
-  const handleFolderSelect = (e) => {
-    const fileList = e.target.files;
-    if (!fileList.length) return;
-
-    const fullPath = fileList[0].webkitRelativePath;
-    const rootFolder = fullPath.split("/")[0];
-    setDirectoryPath(rootFolder);
-    localStorage.setItem(`directoryPath_${folderName}`, rootFolder);
-  };
-
-  const pathSegments = directoryPath ? directoryPath.split("/").filter(Boolean) : [];
-
   // 카테고리별 문서
   const fetchFilesByCategory = async (categoryName, index) => {
     try {
@@ -213,14 +289,30 @@ const CategoryPage = () => {
       );
 
       const blob = new Blob([response.data], { type: "application/zip" });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `${folderName}.zip`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+
+      const fileHandle = await window.showSaveFilePicker({
+        suggestedName: `${folderName}.zip`,
+        types: [
+          {
+            description: "ZIP 파일",
+            accept: { "application/zip": [".zip"] },
+          },
+        ],
+      });
+
+      const writable = await fileHandle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+
+      Toast.fire({
+        icon: "success",
+        html: `
+          <div style="text-align:left; line-height:1.4;">
+            <b>다운로드 완료!</b><br/>
+            <small>📁 '${folderName}' 파일이 저장되었습니다.</small>
+          </div>
+        `,
+      });
     } catch (err) {
       console.error("폴더 다운로드 실패:", err);
     }
@@ -229,22 +321,77 @@ const CategoryPage = () => {
   // 카테고리별 다운로드 
   const handleDownloadCategory = async (categoryName) => {
     try {
+      // 현재 카테고리 안에 파일이 존재하는지 확인
+      const targetCategory = categories.find((cat) => cat.name === categoryName);
+
+      if (!targetCategory || !targetCategory.files || targetCategory.files.length === 0) {
+        Toast.fire({
+          icon: "info",
+          html: `
+            <div style="
+              font-size: 15px;
+              font-weight: 500;
+              text-align: center;
+              color: #333;
+              line-height: 1.6;
+              font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+            ">
+              <span style="display:block; font-weight:700; color:#1a264d;">
+                '${categoryName}'
+              </span>
+              카테고리에 포함된 문서가 없습니다.
+            </div>
+          `,
+          background: "#fff",
+          showConfirmButton: false,
+          timer: 3500,
+        });
+        return; // 다운로드 중단
+      }
+
+      // 파일이 있는 경우만 백엔드 요청
       const response = await axios.get(
         `http://localhost:8000/folders/download/category/${folderId}/${encodeURIComponent(categoryName)}`,
         { responseType: "blob" }
       );
 
       const blob = new Blob([response.data], { type: "application/zip" });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `${categoryName}.zip`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+
+      const fileHandle = await window.showSaveFilePicker({
+        suggestedName: `${categoryName}.zip`,
+        types: [
+          {
+            description: "ZIP 파일",
+            accept: { "application/zip": [".zip"] },
+          },
+        ],
+      });
+
+      const writable = await fileHandle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+
+      Toast.fire({
+        icon: "success",
+        html: `
+          <div style="text-align:left; line-height:1.4;">
+            <b>다운로드 완료!</b><br/>
+            <small>'${categoryName}.zip' 저장 완료!</small>
+          </div>
+        `,
+      });
     } catch (err) {
       console.error("카테고리 다운로드 실패:", err);
+      Toast.fire({
+        icon: "error",
+        html: `
+          <div style="text-align:left; line-height:1.4;">
+            <b>다운로드 실패!</b><br/>
+            <small>서버에서 파일을 가져오는 중 오류가 발생했습니다.</small>
+          </div>
+        `,
+        timer: 4000,
+      });
     }
   };
 
@@ -253,18 +400,65 @@ const CategoryPage = () => {
     try {
       const response = await axios.get(
         `http://localhost:8000/folders/download/file/${fileId}`,
-        { responseType: "blob" }
+        {
+          responseType: "blob",
+          headers: {
+            Accept: "application/octet-stream",
+          },
+        }
       );
 
-      const blob = new Blob([response.data], { type: "application/octet-stream" });
+      const blob = new Blob([response.data]);
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+
+      // 최신 브라우저: showSaveFilePicker
+      if (window.showSaveFilePicker) {
+        try {
+          const fileHandle = await window.showSaveFilePicker({
+            suggestedName: fileName,
+            types: [
+              {
+                description: "모든 파일",
+                accept: { "application/octet-stream": ["*/*"] },
+              },
+            ],
+          });
+
+          const writable = await fileHandle.createWritable();
+          await writable.write(blob);
+          await writable.close();
+        } catch (pickerError) {
+          console.warn("showSaveFilePicker 사용 불가, fallback 실행:", pickerError);
+          // fallback으로 a태그 다운로드 시도
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = fileName;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        }
+      } else {
+        // 구형 브라우저: 자동 다운로드 링크 생성
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
+
+      // cleanup
       window.URL.revokeObjectURL(url);
+
+      Toast.fire({
+        icon: "success",
+        html: `
+          <div style="text-align:left; line-height:1.4;">
+            <b>다운로드 완료!</b><br/>
+            <small>'${fileName}' 저장 완료!</small>
+          </div>
+        `,
+      });
     } catch (err) {
       console.error("파일 다운로드 실패:", err);
     }
@@ -274,49 +468,16 @@ const CategoryPage = () => {
 
   return (
     <div className="category-page" onClick={() => setMenuOpen(null)}>
-      <input
-        type="file"
-        id="folderInput"
-        webkitdirectory="true"
-        directory=""
-        multiple
-        style={{ display: "none" }}
-        onChange={handleFolderSelect}
-      />
 
       <div className="top-bar">
         <button className="back-btn" onClick={() => navigate("/directory", { state: {refresh: true} })}>
           ← 돌아가기
         </button>
+      </div>
 
-        <div className="right-top">
-          <div className="sync-path-box">
-            <span className="folder-icon2">📁</span>
-
-            {pathSegments.length > 0 ? (
-              pathSegments.map((seg, idx) => (
-                <span key={idx} className="path-seg">
-                  {seg}
-                  {idx < pathSegments.length - 1 && (
-                    <span className="arrow">›</span>
-                  )}
-                </span>
-              ))
-            ) : (
-              <span className="path-placeholder">연결된 디렉토리 없음</span>
-            )}
-
-            <button
-              className="edit-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                document.getElementById("folderInput").click();
-              }}
-            >
-              변경
-            </button>
-          </div>
-
+      <div className="folder-top">
+        <h2 className="folder-title">
+          {folderName}
           <button
             className="refresh-btn"
             onClick={async (e) => {
@@ -353,11 +514,7 @@ const CategoryPage = () => {
           >
             <span className="refresh-icon">🔄</span>
           </button>
-        </div>
-      </div>
-
-      <div className="folder-top">
-        <h2 className="folder-title">{folderName}</h2>
+          </h2>
         <div className="folder-actions">
           <button 
             data-tip="새 카테고리를 추가합니다"
@@ -375,64 +532,97 @@ const CategoryPage = () => {
                 const filesRes = await axios.get(`http://localhost:8000/folders/${folderId}/files`);
                 const files = filesRes.data.files || [];
 
-                // 분류되지 않은 파일만 계산
-                const unclassified = files.filter(
-                  (f) => f.is_transform === 2 && f.is_classification === 2 && f.cateory === null
-                );
-
-                if (unclassified.length === 0) {
-                  Swal.fire({
+                // 파일 전체 계산
+                if (files.length === 0) {
+                  Toast.fire({
                     icon: "info",
-                    title: "분류할 문서가 없습니다",
-                    text: "모든 문서가 이미 분류 완료 상태입니다.",
-                    timer: 2000,
-                    showConfirmButton: false,
+                    html: `
+                      <div style="text-align:center; line-height:1.5;">
+                        <b>분류할 문서가 없습니다</b><br/>
+                        <small>파일이 존재하지 않습니다.</small>
+                      </div>
+                    `,
                   });
                   return;
                 }
 
-                // 분류 개수 안내창
+                // 전체 파일 개수 안내창
                 const confirm = await Swal.fire({
-                  title: "AI 분류 시작",
-                  html: `총 <b>${files.length}</b>개 중 <b style="color:#0066ff;">${unclassified.length}</b>개의 문서를 분류합니다.<br>진행하시겠습니까?`,
                   icon: "question",
+                  title: "AI 자동 분류",
+                  html: `
+                    <div style="
+                      font-size: 15px;
+                      text-align: center;
+                      line-height: 1.6;
+                      font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+                    ">
+                      <b style="font-size: 16px;">총 ${files.length}개의 모든 문서</b><br/>
+                      AI가 자동으로 재분류합니다.<br/>
+                      <span style="color:#666;">진행하시겠습니까?</span>
+                    </div>
+                  `,
+                  width: 380,
+                  padding: "1.4em 1.2em 1.1em",
+                  background: "#fff",
                   showCancelButton: true,
                   confirmButtonText: "시작하기",
                   cancelButtonText: "취소",
                   reverseButtons: true,
+                  buttonsStyling: false,
+                  customClass: {
+                    popup: "ai-alert-popup",
+                    title: "ai-alert-title",
+                    confirmButton: "ai-confirm-btn",
+                    cancelButton: "ai-cancel-btn",
+                  },
                 });
 
                 if (!confirm.isConfirmed) return;
 
                 // 로딩 표시
                 Swal.fire({
-                  title: "분류 중...",
-                  text: "AI가 문서를 분석하고 있어요.",
+                  title: "AI 분류 중...",
+                  html: `
+                    <div style="font-size:0.95rem; margin-top:6px; color:#555;">
+                      문서를 분석하고 있습니다.<br/>잠시만 기다려주세요.
+                    </div>
+                  `,
                   allowOutsideClick: false,
-                  didOpen: () => {
-                    Swal.showLoading();
+                  didOpen: () => Swal.showLoading(),
+                  customClass: {
+                    popup: "custom-loading",
+                    title: "custom-title",
                   },
                 });
 
                 // 실제 분류 요청
                 const res = await axios.post(`http://localhost:8000/folders/${folderId}/classify`);
 
-                Swal.fire({
+                Swal.close();
+
+                Toast.fire({
                   icon: "success",
-                  title: "분류 요청 완료",
-                  text: `${unclassified.length}개의 파일이 분류 서버로 전달되었습니다.`,
-                  timer: 2000,
-                  showConfirmButton: false,
+                  html: `
+                    <div style="text-align:left; line-height:1.4;">
+                      <b>AI 분류 완료!</b><br/>
+                      <small>${files.length}개 문서가 처리되었습니다</small>
+                    </div>
+                  `,
                 });
 
-                await fetchProgress(); // 진행률 즉시 갱신
+                await fetchProgress();  // 진행률 즉시 갱신
                 await fetchFilesWithoutCategory();
               } catch (err) {
                 console.error("분류 요청 실패:", err);
-                Swal.fire({
+                Toast.fire({
                   icon: "error",
-                  title: "분류 실패",
-                  text: "분류 서버와 연결할 수 없습니다.",
+                  html: `
+                    <div style="text-align:left; line-height:1.4;">
+                      <b>분류 실패!</b><br/>
+                      <small>분류 서버와 연결할 수 없습니다.</small>
+                    </div>
+                  `,
                 });
               }
             }}
@@ -496,7 +686,7 @@ const CategoryPage = () => {
               <ul className="drop-files">
                 {cat.files && cat.files.length > 0 ? (
                   cat.files.map((file, fIdx) => (
-                    <li key={fIdx} className="file-item">
+                    <li key={fIdx} className="cat-file-item">
                       <span className="file-name">{file.file_name}</span>
                       <span className="file-type">
                         {file.file_type?.toUpperCase()}
@@ -531,10 +721,14 @@ const CategoryPage = () => {
                                 await fetchFilesWithoutCategory();
                                 await fetchProgress();
                               } catch (err) {
-                                Swal.fire({
+                                Toast.fire({
                                   icon: "error",
-                                  title: "압축 해제 실패",
-                                  text: "ZIP 파일을 해제하는 중 오류가 발생했습니다.",
+                                  html: `
+                                    <div style="text-align:left; line-height:1.4;">
+                                      <b>오류 발생!</b><br/>
+                                      <small>ZIP 파일 해제 중 문제가 발생했습니다.</small>
+                                    </div>
+                                  `,
                                 });
                               }
                             }}
@@ -552,44 +746,14 @@ const CategoryPage = () => {
 
                         <button
                           className="delete-btn"
-                          onClick={async () => {
-                            const confirm = await Swal.fire({
-                              title: "삭제하시겠어요?",
-                              text: `${file.file_name} 파일이 완전히 삭제됩니다.`,
-                              icon: "warning",
-                              showCancelButton: true,
-                              confirmButtonText: "삭제",
-                              cancelButtonText: "취소",
-                              confirmButtonColor: "#d33",
-                              cancelButtonColor: "#aaa",
-                            });
-
-                            if (!confirm.isConfirmed) return;
-
-                            try {
-                              await axios.delete(
-                                `http://localhost:8000/files/${file.file_id}`
-                              );
-                              Swal.fire({
-                                icon: "success",
-                                title: "삭제 완료",
-                                text: `${file.file_name}이 삭제되었습니다.`,
-                                timer: 1500,
-                                showConfirmButton: false,
-                              });
-
-                              await fetchCategories();
-                              await fetchFilesWithoutCategory();
-                              await fetchProgress();
-                            } catch (err) {
-                              console.error("파일 삭제 실패:", err);
-                              Swal.fire({
-                                icon: "error",
-                                title: "삭제 실패",
-                                text: "서버에서 파일 삭제 중 오류가 발생했습니다.",
-                              });
-                            }
-                          }}
+                          onClick={() =>
+                            setModal({
+                              show: true,
+                              type: "deleteFile",
+                              value: file.file_name,
+                              fileId: file.file_id,
+                            })
+                          }
                         >
                           ✖
                         </button>
@@ -625,7 +789,7 @@ const CategoryPage = () => {
             {showUncategorized && (
               <ul className="drop-files">
                 {files.map((file, idx) => (
-                  <li key={idx} className="file-item">
+                  <li key={idx} className="cat-file-item">
                     <span className="file-name">{file.file_name}</span>
                     <span className="file-type">
                       {file.file_type?.toUpperCase()}
@@ -634,8 +798,11 @@ const CategoryPage = () => {
                     <div className="file-actions">
                       {file.file_type?.toLowerCase() === "zip" && (
                         <button
-                          className="unzip-btn"
+                          className={`unzip-btn ${file.is_classification === 4 ? "disabled" : ""}`}
+                          disabled = {file.is_classification === 4}
                           onClick={async () => {
+                            if (file.is_classification === 4 ) return;    // 이미 해제된 파일은 무시
+
                             try {
                               Swal.fire({
                                 title: "압축 해제 중...",
@@ -668,7 +835,7 @@ const CategoryPage = () => {
                             }
                           }}
                         >
-                          압축해제
+                          {file.is_classification === 4 ? "해제 완료" : "압축해제"}
                         </button>
                       )}
 
@@ -681,44 +848,14 @@ const CategoryPage = () => {
 
                       <button
                         className="delete-btn"
-                        onClick={async () => {
-                          const confirm = await Swal.fire({
-                            title: "삭제하시겠어요?",
-                            text: `${file.file_name} 파일이 완전히 삭제됩니다.`,
-                            icon: "warning",
-                            showCancelButton: true,
-                            confirmButtonText: "삭제",
-                            cancelButtonText: "취소",
-                            confirmButtonColor: "#d33",
-                            cancelButtonColor: "#aaa",
-                          });
-
-                          if (!confirm.isConfirmed) return;
-
-                          try {
-                            await axios.delete(
-                              `http://localhost:8000/files/${file.file_id}`
-                            );
-                            Swal.fire({
-                              icon: "success",
-                              title: "삭제 완료",
-                              text: `${file.file_name}이 삭제되었습니다.`,
-                              timer: 1500,
-                              showConfirmButton: false,
-                            });
-
-                            await fetchCategories();
-                            await fetchFilesWithoutCategory();
-                            await fetchProgress();
-                          } catch (err) {
-                            console.error("파일 삭제 실패:", err);
-                            Swal.fire({
-                              icon: "error",
-                              title: "삭제 실패",
-                              text: "서버에서 파일 삭제 중 오류가 발생했습니다.",
-                            });
-                          }
-                        }}
+                        onClick={() =>
+                          setModal({
+                            show: true,
+                            type: "deleteFile",
+                            value: file.file_name,
+                            fileId: file.file_id,
+                          })
+                        }
                       >
                         ✖
                       </button>
@@ -737,9 +874,7 @@ const CategoryPage = () => {
             {modal.type !== "delete" ? (
               <>
                 <h4>
-                  {modal.type === "create"
-                    ? "새 카테고리 생성"
-                    : "카테고리 이름 수정"}
+                  {modal.type === "create" ? "새 카테고리 생성" : "카테고리 이름 수정"}
                 </h4>
                 <input
                   type="text"
@@ -758,8 +893,12 @@ const CategoryPage = () => {
               </>
             ) : (
               <>
-                <h4>삭제하시겠어요?</h4>
-                <p className="modal-warning-text">되돌릴 수 없습니다.</p>
+                <h4>카테고리를 삭제하시겠습니까?</h4>
+                <p className="modal-warning-text" style={{ textAlign: "center" }}>
+                  <b>'{modal.value}'</b> 카테고리를 삭제하면<br/>
+                  해당 카테고리 안의 문서들은 <b>분류되지 않은 문서</b>로 이동합니다.<br/><br/>
+                  <small>삭제 후 되돌릴 수 없습니다.</small>
+                </p>
                 <div className="modal-btn-wrap">
                   <button className="cancel-btn" onClick={() => setModal({ show: false })}>
                     취소
@@ -770,6 +909,60 @@ const CategoryPage = () => {
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {modal.show && modal.type === "deleteFile" && (
+        <div className="modal-overlay" onClick={() => setModal({ show: false })}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <h4>문서를 삭제하시겠습니까?</h4>
+            <p className="modal-warning-text">
+              <b>'{modal.value}'</b> <br /> 문서가 삭제됩니다.<br />
+              삭제 후 되돌릴 수 없습니다.
+            </p>
+            <div className="modal-btn-wrap">
+              <button className="cancel-btn" onClick={() => setModal({ show: false })}>
+                취소
+              </button>
+              <button
+                className="confirm-btn delete"
+                onClick={async () => {
+                  try {
+                    await axios.delete(`http://localhost:8000/files/${modal.fileId}`);
+                    await fetchCategories();
+                    await fetchFilesWithoutCategory();
+                    await fetchProgress();
+                    setModal({ show: false });
+
+                    Toast.fire({
+                      icon: "success",
+                      html: `
+                        <div style="text-align:left; line-height:1.4;">
+                          <b>삭제 완료!</b><br/>
+                          <small>'${modal.value}' 문서가 삭제되었습니다.</small>
+                        </div>
+                      `,
+                      timer: 4000,
+                    });
+                  } catch (err) {
+                    console.error("파일 삭제 실패:", err);
+                    Toast.fire({
+                      icon: "error",
+                      html: `
+                        <div style="text-align:left; line-height:1.4;">
+                          <b>삭제 실패!</b><br/>
+                          <small>서버에서 문서 삭제 중 오류가 발생했습니다.</small>
+                        </div>
+                      `,
+                      timer: 5000,
+                    });
+                  }
+                }}
+              >
+                삭제
+              </button>
+            </div>
           </div>
         </div>
       )}

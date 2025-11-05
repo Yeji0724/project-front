@@ -97,7 +97,9 @@
 /* 세 점 메뉴 버튼 */
 .menu-dots {
   position: absolute;
-  right: 14px;
+  width: 30px;
+  height: 20px;
+  right: 8px;
   bottom: 0px;
   display: flex;
   flex-direction: column;

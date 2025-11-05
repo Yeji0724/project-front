@@ -7,6 +7,7 @@ function DirectoryPage() {
   const [folders, setFolders] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
+  const [warningText, setWarningText] = useState("");
   const [modalType, setModalType] = useState("");
   const [selectedFolderIndex, setSelectedFolderIndex] = useState(null);
 
@@ -131,6 +132,7 @@ function DirectoryPage() {
 
     setFolders(folders.filter((_, i) => i !== idx));
     setShowModal(false);
+    setMenuOpen(null);
 
   } catch (error) {
     console.error("폴더 삭제 실패:", error);
@@ -241,23 +243,36 @@ function DirectoryPage() {
             ) : (
               <>
                 <h4>{modalType === "create" ? "새 폴더 생성" : "폴더 이름 수정"}</h4>
-                <input
-                  type="text"
-                  className="modal-input"
-                  placeholder="폴더 이름"
-                  value={newFolderName}
-                  onChange={(e) => setNewFolderName(e.target.value)}
-                />
+
+                {/* 입력창 */}
+                <div className="input-wrap">
+                  <input
+                    type="text"
+                    className="modal-input"
+                    placeholder="폴더 이름 (최대 20자)"
+                    maxLength={20}
+                    value={newFolderName}
+                    onChange={(e) => setNewFolderName(e.target.value)}
+                  />
+
+                  {/* 글자수 + 경고문 */}
+                  <div className="char-count">
+                    {newFolderName.length}/20
+                  </div>
+                </div>
               </>
             )}
 
+            {/* 모달 공통 버튼 */}
             <div className="modal-btn-wrap">
-              <button className="cancel-btn"
-                onClick={() => setShowModal(false)}>
+              <button className="cancel-btn" onClick={() => setShowModal(false)}>
                 취소
               </button>
-              <button className="confirm-btn"
-                onClick={modalConfirm}>
+              <button
+                className="confirm-btn"
+                onClick={modalConfirm}
+                disabled={!newFolderName.trim() || newFolderName.length > 20}
+              >
                 {modalType === "delete" ? "삭제" : "확인"}
               </button>
             </div>

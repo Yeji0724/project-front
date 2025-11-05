@@ -29,64 +29,6 @@
   margin-bottom: 10px;
 }
 
-/* Finder 스타일 디렉토리 경로 표시 */
-.sync-path-box {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: #fff;
-  padding: 3px 29px;
-  border-radius: 10px;
-  font-size: 0.88rem;
-  color: #1e2a55;
-  border: 1px solid #d8e1f7;
-  max-width: 65%;
-  overflow: hidden;
-}
-
-.folder-icon2 {
-  font-size: 1.5rem;
-  margin-bottom: 5px;
-}
-
-.path-seg {
-  font-weight: 700;
-  color: #2b3d74;
-}
-
-.sync-path-box .arrow {
-  margin: 0 4px;
-  font-size: 0.78rem;
-  color: #4a5e9a;
-}
-
-.path-placeholder {
-  color: #7e86a1;
-}
-
-/* 오른쪽 영역 전체 */
-.right-top {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-/* 변경 버튼 */
-.edit-btn {
-  margin-left: auto;
-  background: #0156ff;
-  border: none;
-  color: #fff;
-  padding: 6.8px 10px;
-  border-radius: 8px;
-  font-weight: 700;
-  font-size: 0.79rem;
-  cursor: pointer;
-}
-.edit-btn:hover {
-  background: #0046d1;
-}
-
 /* 새로고침 버튼 */
 .refresh-btn {
   position: relative;
@@ -468,7 +410,7 @@
 }
 
 /* ===== 파일 아이템 (ZIP 흔들림 방지 완전판) ===== */
-.file-item {
+.cat-file-item {
   display: grid;
   grid-template-columns: 1fr 70px 200px; /* 이름 | 타입 | 버튼 */
   align-items: center;
@@ -480,7 +422,7 @@
   transition: all 0.25s ease;
 }
 
-.file-item:hover {
+.cat-item:hover {
   background: #eef2ff;
   transform: translateY(-1px);
 }
@@ -513,26 +455,6 @@
   gap: 8px;
   min-width: 180px;
   flex-wrap: nowrap;
-}
-
-/* 압축 해제 버튼 */
-.unzip-btn {
-  background-color: #eef3ff;
-  border: 1px solid #cdd3f8;
-  color: #2c46c7;
-  font-size: 0.85rem;
-  font-weight: 600;
-  border-radius: 8px;
-  padding: 5px 10px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-}
-
-.unzip-btn:hover {
-  background-color: #dce4ff;
-  border-color: #b7c0f3;
-  color: #1c2fa5;
-  transform: translateY(-1px);
 }
 
 /* 다운로드 버튼 */
@@ -576,22 +498,6 @@
   opacity: 0.7;
 }
 
-/* ===== 카테고리 없는 문서 표시 ===== */
-.uncategorized-files {
-  margin-top: 30px;
-  background: #fff;
-  border-radius: 14px;
-  padding: 18px 22px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-}
-
-.uncat-title {
-  font-size: 1.04rem;
-  font-weight: 800;
-  color: #2b3a75;
-  margin-bottom: 12px;
-}
-
 /* 압축 해제 버튼 */
 .unzip-btn {
   background-color: #eef3ff;
@@ -612,6 +518,16 @@
   transform: translateY(-1px);
 }
 
+.unzip-btn.disabled,
+.unzip-btn:disabled {
+  background-color: #e0e0e0 !important;
+  border-color: #ccc !important;
+  color: #888 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
+
 /* ⬇ 다운로드 버튼 재정렬 (압축해제와 간격 조정) */
 .download-btn {
   background: none;
@@ -628,3 +544,50 @@
   transform: translateY(2px);
 }
 
+/* SweetAlert2 - AI 분류창 스타일 통일 */
+.ai-alert-popup {
+  border-radius: 18px !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.1) !important;
+}
+
+.ai-alert-title {
+  font-family: "Pretendard", "Noto Sans KR", sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 20px !important;
+  margin-bottom: 12px !important;
+  color: #1c2a69 !important;
+  text-align: center !important;
+}
+
+.ai-confirm-btn, .ai-cancel-btn {
+  border-radius: 8px !important;
+  padding: 8px 20px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  transition: all 0.25s ease !important;
+  min-width: 90px !important;
+}
+
+.ai-confirm-btn {
+  background: linear-gradient(90deg, #4f6aff, #6982ff) !important;
+  color: #fff !important;
+  border: none !important;
+  margin-left: 6px !important;
+  cursor: pointer;
+}
+
+.ai-cancel-btn {
+  background: #eef0f6 !important;
+  color: #555 !important;
+  border: none !important;
+  margin-right: 6px !important;
+  cursor: pointer;
+}
+
+.ai-confirm-btn:hover {
+  background: linear-gradient(90deg, #3e57ef, #5c76ff) !important;
+}
+
+.ai-cancel-btn:hover {
+  background: #e2e4ea !important;
+}
