@@ -532,9 +532,13 @@ const CategoryPage = () => {
                 const filesRes = await axios.get(`http://localhost:8000/folders/${folderId}/files`);
                 const files = filesRes.data.files || [];
 
-                // 파일 전체 계산
-                if (files.length === 0) {
-                  Toast.fire({
+                // 분류되지 않은 파일만 계산
+                const unclassified = files.filter(
+                  (f) => f.is_transform === 2 && f.is_classification === 2 && f.category === null
+                );
+
+                if (unclassified.length === 0) {
+                  Swal.fire({
                     icon: "info",
                     html: `
                       <div style="text-align:center; line-height:1.5;">
