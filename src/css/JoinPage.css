@@ -55,7 +55,7 @@
 .join-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
 }
 
 .input-group {
@@ -92,7 +92,7 @@ input[type="password"]::-webkit-textfield-decoration-container {
 .toggle-visibility {
   position: absolute;
   right: 12px;
-  top: 43% !important;
+  top: 41% !important;
   transform: translateY(-50%);
   background: none;
   border: none;
@@ -113,7 +113,7 @@ input[type="password"]::-webkit-textfield-decoration-container {
 .validation-text {
   position: absolute;
   left: 5px;
-  bottom: -22px;
+  bottom: -20px;
   font-size: 0.82rem;
   line-height: 1.2;
   text-align: left;
@@ -155,8 +155,8 @@ input[type="password"]::-webkit-textfield-decoration-container {
 
 /* 실패 문구 */
 .join-error-text {
-  margin-top: -8px;
-  margin-bottom: 5px;
+  margin-top: -17px;
+  margin-bottom: 3px;
   font-size: 0.85rem;
   color: #ff4a4a;
   min-height: 18px;
@@ -207,7 +207,7 @@ input[type="password"]::-webkit-textfield-decoration-container {
 .tooltip-icon {
   position: absolute;
   right: 10px;
-  top: 58%;
+  top: 57%;
   transform: translateY(-97%);
   cursor: pointer;
   font-size: 16px;

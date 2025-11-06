@@ -528,94 +528,72 @@ const CategoryPage = () => {
             data-tip="AI로 문서를 자동 분류합니다"
             onClick={async () => {
               try {
-                // 백엔드에서 분류 가능한 문서 개수 조회
                 const filesRes = await axios.get(`http://localhost:8000/folders/${folderId}/files`);
                 const files = filesRes.data.files || [];
 
-                // 분류되지 않은 파일만 계산
                 const unclassified = files.filter(
                   (f) => f.is_transform === 2 && f.is_classification === 2 && f.category === null
                 );
 
                 if (unclassified.length === 0) {
-                  Swal.fire({
+                  Toast.fire({
                     icon: "info",
                     html: `
-                      <div style="text-align:center; line-height:1.5;">
-                        <b>분류할 문서가 없습니다</b><br/>
+                      <div style="text-align:center; line-height:1.6;">
+                        <b>분류할 문서가 없습니다.</b><br/>
                         <small>파일이 존재하지 않습니다.</small>
                       </div>
                     `,
+                    background: "#fff",
+                    showConfirmButton: false,
+                    timer: 3000,
                   });
                   return;
                 }
 
-                // 전체 파일 개수 안내창
-                const confirm = await Swal.fire({
-                  icon: "question",
-                  title: "AI 자동 분류",
-                  html: `
-                    <div style="
-                      font-size: 15px;
-                      text-align: center;
-                      line-height: 1.6;
-                      font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
-                    ">
-                      <b style="font-size: 16px;">총 ${files.length}개의 모든 문서</b><br/>
-                      AI가 자동으로 재분류합니다.<br/>
-                      <span style="color:#666;">진행하시겠습니까?</span>
-                    </div>
-                  `,
-                  width: 380,
-                  padding: "1.4em 1.2em 1.1em",
+                // 로딩 Toast 표시
+                const loadingToast = Swal.mixin({
+                  toast: true,
+                  position: "top",
+                  showConfirmButton: false,
+                  timerProgressBar: true,
                   background: "#fff",
-                  showCancelButton: true,
-                  confirmButtonText: "시작하기",
-                  cancelButtonText: "취소",
-                  reverseButtons: true,
-                  buttonsStyling: false,
                   customClass: {
-                    popup: "ai-alert-popup",
-                    title: "ai-alert-title",
-                    confirmButton: "ai-confirm-btn",
-                    cancelButton: "ai-cancel-btn",
+                    popup: "login-toast-popup",
+                    title: "login-toast-title",
+                  },
+                  didOpen: () => {
+                    Swal.showLoading();
                   },
                 });
 
-                if (!confirm.isConfirmed) return;
-
-                // 로딩 표시
-                Swal.fire({
-                  title: "AI 분류 중...",
+                loadingToast.fire({
+                  icon: "info",
                   html: `
-                    <div style="font-size:0.95rem; margin-top:6px; color:#555;">
-                      문서를 분석하고 있습니다.<br/>잠시만 기다려주세요.
+                    <div style="text-align:center; line-height:1.6;">
+                      <b>AI 분류 중...</b><br/>
+                      <small>문서를 분석하고 있습니다.</small>
                     </div>
                   `,
-                  allowOutsideClick: false,
-                  didOpen: () => Swal.showLoading(),
-                  customClass: {
-                    popup: "custom-loading",
-                    title: "custom-title",
-                  },
+                  timer: 3000,
                 });
 
                 // 실제 분류 요청
                 const res = await axios.post(`http://localhost:8000/folders/${folderId}/classify`);
 
-                Swal.close();
-
+                // 성공 Toast
                 Toast.fire({
                   icon: "success",
                   html: `
                     <div style="text-align:left; line-height:1.4;">
                       <b>AI 분류 완료!</b><br/>
-                      <small>${files.length}개 문서가 처리되었습니다</small>
+                      <small>${files.length}개 문서가 처리되었습니다.</small>
                     </div>
                   `,
+                  timer: 4000,
                 });
 
-                await fetchProgress();  // 진행률 즉시 갱신
+                await fetchProgress();
                 await fetchFilesWithoutCategory();
               } catch (err) {
                 console.error("분류 요청 실패:", err);
@@ -627,14 +605,13 @@ const CategoryPage = () => {
                       <small>분류 서버와 연결할 수 없습니다.</small>
                     </div>
                   `,
+                  timer: 4000,
                 });
               }
             }}
           >
             분류하기
           </button>
-
-
 
           {/* 전체 다운로드 버튼 */}
           <button
@@ -702,37 +679,64 @@ const CategoryPage = () => {
                             className="unzip-btn"
                             onClick={async () => {
                               try {
-                                Swal.fire({
-                                  title: "압축 해제 중...",
-                                  text: "ZIP 파일의 내용을 추출하고 있어요.",
-                                  allowOutsideClick: false,
-                                  didOpen: () => Swal.showLoading(),
+                                // 🔹 로딩 Toast
+                                const loadingToast = Swal.mixin({
+                                  toast: true,
+                                  position: "top",
+                                  showConfirmButton: false,
+                                  timerProgressBar: true,
+                                  background: "#fff",
+                                  customClass: {
+                                    popup: "login-toast-popup",
+                                    title: "login-toast-title",
+                                  },
+                                  didOpen: () => {
+                                    Swal.showLoading();
+                                  },
                                 });
 
+                                loadingToast.fire({
+                                  icon: "info",
+                                  html: `
+                                    <div style="text-align:center; line-height:1.6;">
+                                      <b>압축 해제 중...</b><br/>
+                                      <small>ZIP 파일의 내용을 추출하고 있습니다.</small>
+                                    </div>
+                                  `,
+                                  timer: 2000,
+                                });
+
+                                // 실제 해제 요청
                                 const res = await axios.post(
                                   `http://localhost:8000/files/unzip/${folderId}/${file.file_id}`
                                 );
 
-                                Swal.fire({
+                                // 성공 Toast
+                                Toast.fire({
                                   icon: "success",
-                                  title: "압축 해제 완료!",
-                                  text: res.data.message,
-                                  timer: 2000,
-                                  showConfirmButton: false,
+                                  html: `
+                                    <div style="text-align:left; line-height:1.4;">
+                                      <b>압축 해제 완료!</b><br/>
+                                      <small>${res.data.message}</small>
+                                    </div>
+                                  `,
+                                  timer: 3500,
                                 });
 
                                 await fetchCategories();
                                 await fetchFilesWithoutCategory();
                                 await fetchProgress();
                               } catch (err) {
+                                console.error("ZIP 해제 실패:", err);
                                 Toast.fire({
                                   icon: "error",
                                   html: `
                                     <div style="text-align:left; line-height:1.4;">
-                                      <b>오류 발생!</b><br/>
-                                      <small>ZIP 파일 해제 중 문제가 발생했습니다.</small>
+                                      <b>압축 해제 실패!</b><br/>
+                                      <small>ZIP 파일 해제 중 오류가 발생했습니다.</small>
                                     </div>
                                   `,
+                                  timer: 4000,
                                 });
                               }
                             }}
@@ -803,38 +807,63 @@ const CategoryPage = () => {
                       {file.file_type?.toLowerCase() === "zip" && (
                         <button
                           className={`unzip-btn ${file.is_classification === 4 ? "disabled" : ""}`}
-                          disabled = {file.is_classification === 4}
+                          disabled={file.is_classification === 4}
                           onClick={async () => {
-                            if (file.is_classification === 4 ) return;    // 이미 해제된 파일은 무시
-
+                            if (file.is_classification === 4) return;
                             try {
-                              Swal.fire({
-                                title: "압축 해제 중...",
-                                text: "ZIP 파일의 내용을 추출하고 있어요.",
-                                allowOutsideClick: false,
+                              // 로딩 Toast
+                              const loadingToast = Swal.mixin({
+                                toast: true,
+                                position: "top",
+                                showConfirmButton: false,
+                                timerProgressBar: true,
+                                background: "#fff",
+                                customClass: {
+                                  popup: "login-toast-popup",
+                                  title: "login-toast-title",
+                                },
                                 didOpen: () => Swal.showLoading(),
+                              });
+
+                              loadingToast.fire({
+                                icon: "info",
+                                html: `
+                                  <div style="text-align:center; line-height:1.6;">
+                                    <b>압축 해제 중...</b><br/>
+                                    <small>ZIP 파일의 내용을 추출하고 있습니다.</small>
+                                  </div>
+                                `,
+                                timer: 2000,
                               });
 
                               const res = await axios.post(
                                 `http://localhost:8000/files/unzip/${folderId}/${file.file_id}`
                               );
 
-                              Swal.fire({
+                              Toast.fire({
                                 icon: "success",
-                                title: "압축 해제 완료!",
-                                text: res.data.message,
-                                timer: 2000,
-                                showConfirmButton: false,
+                                html: `
+                                  <div style="text-align:left; line-height:1.4;">
+                                    <b>압축 해제 완료!</b><br/>
+                                    <small>${res.data.message}</small>
+                                  </div>
+                                `,
+                                timer: 3500,
                               });
 
                               await fetchCategories();
                               await fetchFilesWithoutCategory();
                               await fetchProgress();
                             } catch (err) {
-                              Swal.fire({
+                              Toast.fire({
                                 icon: "error",
-                                title: "압축 해제 실패",
-                                text: "ZIP 파일을 해제하는 중 오류가 발생했습니다.",
+                                html: `
+                                  <div style="text-align:left; line-height:1.4;">
+                                    <b>압축 해제 실패!</b><br/>
+                                    <small>ZIP 파일 해제 중 오류가 발생했습니다.</small>
+                                  </div>
+                                `,
+                                timer: 4000,
                               });
                             }
                           }}
@@ -842,6 +871,7 @@ const CategoryPage = () => {
                           {file.is_classification === 4 ? "해제 완료" : "압축해제"}
                         </button>
                       )}
+
 
                       <button 
                         className="download-btn"
@@ -885,6 +915,7 @@ const CategoryPage = () => {
                   className="modal-input"
                   value={modal.value}
                   onChange={(e) => setModal({ ...modal, value: e.target.value })}
+                  autoFocus
                 />
                 <div className="modal-btn-wrap">
                   <button className="cancel-btn" onClick={() => setModal({ show: false })}>

@@ -332,12 +332,13 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.35);
+  background: rgba(0, 0, 0, 0.35);
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  padding-top: 120px;
+  align-items: flex-start; /* 중앙 → 상단으로 변경 */
+  padding-top: 120px; /* 상단 여백 (조절 가능) */
   z-index: 9000;
+  animation: fadeInOverlay 0.25s ease forwards;
 }
 
 .modal-box {
@@ -345,26 +346,20 @@
   padding: 28px 34px;
   width: 340px;
   border-radius: 12px;
-  animation: fadeIn 0.25s ease-out;
   text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+
+  /* 위에서 자연스럽게 내려오는 모션 */
+  opacity: 0;
+  transform: translateY(-20px);
+  animation: slideFadeIn 0.35s ease forwards;
 }
 
 .modal-box h4 {
   margin: 0 0 12px;
   color: #1a264d;
+  font-weight: 700;
 }
-
-.modal-input {
-  width: 100%;
-  max-width: 300px; /* 너무 길지 않게 제한 */
-  margin: 14px auto; /* 중앙 정렬 */
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #cfd5e5;
-  font-size: 1rem;
-  display: block;
-}
-
 
 .modal-warning-text {
   font-size: 0.88rem;
@@ -372,10 +367,12 @@
   margin-top: 14px;
 }
 
+/* 버튼 영역 */
 .modal-btn-wrap {
-  margin-top: 10px;
+  margin-top: 16px;
   display: flex;
   gap: 12px;
+  justify-content: center;
 }
 
 .cancel-btn,
@@ -387,27 +384,48 @@
   font-size: 0.9rem;
   font-weight: 700;
   cursor: pointer;
+  transition: all 0.25s ease;
 }
 
 .cancel-btn {
   background: #d9d9d9;
+}
+.cancel-btn:hover {
+  background: #c7c7c7;
 }
 
 .confirm-btn {
   background: #2f65e3;
   color: #fff;
 }
+.confirm-btn:hover {
+  background: #1f4ed2;
+}
 
-/* 삭제 경고 버튼 */
 .confirm-btn.delete {
   background: #cc4f4f;
 }
-
-/* 등장 애니메이션 */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+.confirm-btn.delete:hover {
+  background: #b83f3f;
 }
+
+/* ===== 등장 애니메이션 ===== */
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-25px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 
 /* ===== 파일 아이템 (ZIP 흔들림 방지 완전판) ===== */
 .cat-file-item {

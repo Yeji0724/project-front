@@ -71,57 +71,66 @@ function DirectoryPage() {
 
   // DB - 폴더 생성
   const handleCreateFolder = async () => {
-  if (!newFolderName.trim()) return;
+    if (!newFolderName.trim()) return;
 
-  try {
-    const res = await axios.post("http://localhost:8000/folders/create", {
-      user_id: userId,
-      folder_name: newFolderName.trim()
-    });
+    try {
+      const res = await axios.post("http://localhost:8000/folders/create", {
+        user_id: userId,
+        folder_name: newFolderName.trim(),
+      });
 
-    const newFolder = {
-      folder_id: res.data.folder_id,
-      user_id: userId,
-      folder_name: newFolderName.trim(),
-      file_cnt: 0
-    };
+      const newFolder = {
+        folder_id: res.data.folder_id,
+        user_id: userId,
+        folder_name: newFolderName.trim(),
+        file_cnt: 0,
+      };
 
-    setFolders([newFolder, ...folders]);
-    setShowModal(false);
-
-  } catch (error) {
-    console.error("폴더 생성 실패:", error);
-  }
-};
-
+      setFolders([newFolder, ...folders]);
+      setWarningText(""); // 기존 경고문 초기화
+      return true;
+    } catch (error) {
+      if (error.response && error.response.status === 400) {
+        setWarningText(error.response.data.detail); // “이미 존재하는 폴더 이름입니다.”
+      } else {
+        console.error("폴더 생성 실패:", error);
+        setWarningText("서버 오류가 발생했습니다.")
+      }
+      return false;
+    }
+  };
 
   // DB - 폴더 이름 수정
   const handleRename = async (idx) => {
-  if (!newFolderName.trim()) return;
-  const folder = folders[idx];
+    if (!newFolderName.trim()) return false;
+    const folder = folders[idx];
 
-  try {
-    await axios.patch(
-      `http://localhost:8000/folders/${folder.folder_id}/rename`,
-      { new_name: newFolderName.trim() }
-    );
+    try {
+      await axios.patch(
+        `http://localhost:8000/folders/${folder.folder_id}/rename`,
+        { new_name: newFolderName.trim() }
+      );
 
-    // DB에서 최신 목록 다시 조회 & 정렬 반영
-    const res = await axios.get(`http://localhost:8000/folders/${userId}`);
-    const sorted = res.data.folders.sort(
-      (a, b) => new Date(b.last_work) - new Date(a.last_work)
-    );
+      const res = await axios.get(`http://localhost:8000/folders/${userId}`);
+      const sorted = res.data.folders.sort(
+        (a, b) => new Date(b.last_work) - new Date(a.last_work)
+      );
 
-    setFolders(sorted);
-    setShowModal(false);
-    setMenuOpen(null);
-
-  } catch (error) {
-    console.error("폴더 이름 수정 실패:", error);
-  }
-};
-
-
+      setFolders(sorted);
+      setWarningText("");
+      setShowModal(false);
+      setMenuOpen(null);
+      return true; // 성공
+    } catch (error) {
+      if (error.response && error.response.status === 400) {
+        setWarningText(error.response.data.detail);
+      } else {
+        console.error("폴더 이름 수정 실패:", error);
+        setWarningText("서버 오류가 발생했습니다.");
+      }
+      return false; // 실패
+    }
+  };
 
   // DB - 폴더 삭제
   const handleDelete = async (idx) => {
@@ -140,20 +149,24 @@ function DirectoryPage() {
 };
 
   // 모달 확인 동작
-  const modalConfirm = () => {
+  const modalConfirm = async () => {
+    let success = false;
+
     if (modalType === "create") {
-      handleCreateFolder();
-    } 
-    else if (modalType === "rename") {
-      handleRename(selectedFolderIndex);
-    } 
-    else if (modalType === "delete") {
-      handleDelete(selectedFolderIndex);
+      success = await handleCreateFolder();
+    } else if (modalType === "rename") {
+      success = await handleRename(selectedFolderIndex);
+    } else if (modalType === "delete") {
+      await handleDelete(selectedFolderIndex);
+      success = true;
     }
 
-    setShowModal(false);
-    setNewFolderName("");
-    setSelectedFolderIndex(null);
+    // 성공한 경우에만 닫기
+    if (success) {
+      setShowModal(false);
+      setNewFolderName("");
+      setSelectedFolderIndex(null);
+    }
   };
 
   const handleOpenFolder = (folder) => {
@@ -167,6 +180,7 @@ function DirectoryPage() {
         <button className="create-folder-btn" onClick={() => {
           setModalType("create");
           setNewFolderName("");
+          setWarningText("");
           setShowModal(true);
         }}>
           + 폴더 생성
@@ -219,12 +233,14 @@ function DirectoryPage() {
           <button onClick={() => {
             setModalType("rename");
             setNewFolderName(folders[menuOpen]?.folder_name || "");
+            setWarningText("");
             setShowModal(true);
           }}>
             수정
           </button>
           <button className="delete" onClick={() => {
             setModalType("delete");
+            setSelectedFolderIndex(menuOpen);
             setShowModal(true);
           }}>
             삭제
@@ -234,7 +250,7 @@ function DirectoryPage() {
 
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-box1" onClick={(e) => e.stopPropagation()}>
             {modalType === "delete" ? (
               <>
                 <h4>폴더를 삭제하시겠습니까?</h4>
@@ -253,6 +269,7 @@ function DirectoryPage() {
                     maxLength={20}
                     value={newFolderName}
                     onChange={(e) => setNewFolderName(e.target.value)}
+                    autoFocus
                   />
 
                   {/* 글자수 + 경고문 */}
@@ -260,6 +277,12 @@ function DirectoryPage() {
                     {newFolderName.length}/20
                   </div>
                 </div>
+
+                {warningText && (
+                  <p className="modal-warning-text" style={{ color: "red", marginTop: "6px" }}>
+                    {warningText}
+                  </p>
+                )}
               </>
             )}
 
@@ -271,7 +294,7 @@ function DirectoryPage() {
               <button
                 className="confirm-btn"
                 onClick={modalConfirm}
-                disabled={!newFolderName.trim() || newFolderName.length > 20}
+                disabled={modalType !== "delete" && (!newFolderName.trim() || newFolderName.length > 20)}
               >
                 {modalType === "delete" ? "삭제" : "확인"}
               </button>

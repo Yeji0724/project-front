@@ -194,9 +194,9 @@
   z-index: 9000;
 }
 
-.modal-box {
+.modal-box1 {
   background: #fff;
-  padding: 28px 34px;
+  padding: 15px 26px;
   width: 340px;
   border-radius: 12px;
   animation: fadeIn 0.25s ease-out;

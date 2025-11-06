@@ -15,9 +15,11 @@ function JoinPage() {
 
   const [validation, setValidation] = useState({
     idValid: false,
+    idAvailable: false,
     pwValid: false,
     pwMatch: false,
     emailValid: false,
+    emailAvailable: false
   });
 
   const [errorMsg, setErrorMsg] = useState("");
@@ -30,15 +32,44 @@ function JoinPage() {
     email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
   };
 
-  const handleChange = (e) => {
+  const handleChange = async (e) => {
     const { name, value } = e.target;
     const updatedForm = { ...form, [name]: value };
     setForm(updatedForm);
     setErrorMsg("");
 
     if (name === "user_login_id") {
-      setValidation((p) => ({ ...p, idValid: regex.id.test(value) }));
+      const isValidFormat = regex.id.test(value);
+
+      // 형식 검사 결과 반영
+      setValidation((p) => ({ ...p, idValid: isValidFormat }));
+
+      // 형식 맞을 때만 서버 중복 검사
+      if (isValidFormat) {
+        try {
+          const res = await axios.get(`http://localhost:8000/auth/check-id/${value}`);
+          const available = res.data.available;
+
+          setValidation((p) => ({
+            ...p,
+            idValid: isValidFormat,
+            idAvailable: available,
+          }));
+
+          if (!available) {
+            setErrorMsg("이미 존재하는 아이디입니다.");
+          } else {
+            setErrorMsg("");
+          }
+        } catch (err) {
+          console.error("아이디 중복 확인 실패:", err);
+        }
+      } else {
+        // 형식 자체가 틀리면 중복 검사 결과 초기화
+        setValidation((p) => ({ ...p, idAvailable: false }));
+      }
     }
+
     if (name === "user_password") {
       setValidation((p) => ({
         ...p,
@@ -46,17 +77,39 @@ function JoinPage() {
         pwMatch: value === updatedForm.password_confirm,
       }));
     }
+
     if (name === "password_confirm") {
       setValidation((p) => ({
         ...p,
         pwMatch: updatedForm.user_password === value,
       }));
     }
+
     if (name === "email") {
-      setValidation((p) => ({
-        ...p,
-        emailValid: regex.email.test(value),
-      }));
+      const isValidFormat = regex.email.test(value);
+      setValidation((p) => ({ ...p, emailValid: isValidFormat }));
+
+      if (isValidFormat) {
+        try {
+          const res = await axios.get(`http://localhost:8000/auth/check-email/${value}`);
+          const available = res.data.available;
+          setValidation((p) => ({
+            ...p,
+            emailValid: isValidFormat,
+            emailAvailable: available,
+          }));
+
+          if (!available) {
+            setErrorMsg("이미 등록된 이메일입니다.");
+          } else {
+            setErrorMsg("");
+          }
+        } catch (err) {
+          console.error("이메일 중복 확인 실패:", err);
+        }
+      } else {
+        setValidation((p) => ({ ...p, emailAvailable: false }));
+      }
     }
   };
 
@@ -145,12 +198,14 @@ function JoinPage() {
               {form.user_login_id && (
                 <p
                   className={`validation-text ${
-                    validation.idValid ? "valid" : "invalid"
+                    validation.idValid && validation.idAvailable ? "valid" : "invalid"
                   }`}
                 >
-                  {validation.idValid
-                    ? "✔ 사용 가능한 아이디입니다."
-                    : "✖ 아이디는 영문+숫자 8~20자로 입력해주세요."}
+                  {!validation.idValid
+                    ? "✖ 아이디는 영문+숫자 8~20자로 입력해주세요."
+                    : !validation.idAvailable
+                    ? "✖ 이미 존재하는 아이디입니다."
+                    : "✔ 사용 가능한 아이디입니다."}
                 </p>
               )}
             </div>
@@ -297,12 +352,14 @@ function JoinPage() {
               {form.email && (
                 <p
                   className={`validation-text ${
-                    validation.emailValid ? "valid" : "invalid"
+                    validation.emailValid && validation.emailAvailable ? "valid" : "invalid"
                   }`}
                 >
-                  {validation.emailValid
-                    ? "✔ 사용 가능한 이메일입니다."
-                    : "✖ 올바른 이메일 형식이 아닙니다."}
+                  {!validation.emailValid
+                    ? "✖ 올바른 이메일 형식이 아닙니다."
+                    : !validation.emailAvailable
+                    ? "✖ 이미 등록된 이메일입니다."
+                    : "✔ 사용 가능한 이메일입니다."}
                 </p>
               )}
             </div>
