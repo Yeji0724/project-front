@@ -788,9 +788,78 @@ const CategoryPage = () => {
             >
               <span className="cat-name">분류되지 않은 문서</span>
               <div className="right-icons">
-                <span className="arrow">
-                  {showUncategorized ? "▲" : "▼"}
-                </span>
+                {files.some((f) => f.is_classification === 2) && (
+                  <button
+                    className="retry-btn"
+                    title="분류 실패한 문서만 다시 시도"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      try {
+                        const failedFiles = files.filter((f) => f.is_classification === 2);
+                        if (failedFiles.length === 0) return;
+
+                        // 🔹 로딩 Toast
+                        const loadingToast = Swal.mixin({
+                          toast: true,
+                          position: "top",
+                          showConfirmButton: false,
+                          timerProgressBar: true,
+                          background: "#fff",
+                          customClass: {
+                            popup: "login-toast-popup",
+                            title: "login-toast-title",
+                          },
+                          didOpen: () => Swal.showLoading(),
+                        });
+
+                        loadingToast.fire({
+                          icon: "info",
+                          html: `
+                            <div style="text-align:center; line-height:1.6;">
+                              <b>재분류 중...</b><br/>
+                              <small>분류 실패한 문서 ${failedFiles.length}개를 다시 시도 중입니다.</small>
+                            </div>
+                          `,
+                          timer: 2500,
+                        });
+
+                        // 🔹 재분류 요청
+                        await axios.post(`http://localhost:8000/folders/${folderId}/classify/failed`, {
+                          retry_failed: true, // 서버에서 이 옵션으로 필터 가능하게 설계 권장
+                        });
+
+                        Toast.fire({
+                          icon: "success",
+                          html: `
+                            <div style="text-align:left; line-height:1.4;">
+                              <b>재분류 요청 완료!</b><br/>
+                              <small>${failedFiles.length}개 문서가 다시 분류됩니다.</small>
+                            </div>
+                          `,
+                          timer: 4000,
+                        });
+
+                        await fetchFilesWithoutCategory();
+                        await fetchProgress();
+                      } catch (err) {
+                        console.error("재분류 실패:", err);
+                        Toast.fire({
+                          icon: "error",
+                          html: `
+                            <div style="text-align:left; line-height:1.4;">
+                              <b>재분류 실패!</b><br/>
+                              <small>서버에서 재분류 요청 중 오류가 발생했습니다.</small>
+                            </div>
+                          `,
+                          timer: 4000,
+                        });
+                      }
+                    }}
+                  >
+                    🔁 실패 문서 재분류
+                  </button>
+                )}
+                <span className="arrow">{showUncategorized ? "▲" : "▼"}</span>
               </div>
             </div>
 
