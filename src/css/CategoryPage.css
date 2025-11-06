@@ -609,3 +609,45 @@
 .ai-cancel-btn:hover {
   background: #e2e4ea !important;
 }
+
+/* 분류 상태 라벨 */
+.status-label {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-align: center;
+  min-width: 80px;
+}
+
+/* 상태별 색상 */
+.status-wait {
+  background: #e2e3e5;
+  color: #333;
+}
+
+.status-extract {
+  background: #b3d9ff;
+  color: #004085;
+}
+
+.status-ready {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-classifying {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-fail {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.status-unsupported {
+  background: #f5c6cb;
+  color: #721c24;
+}

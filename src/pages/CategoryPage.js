@@ -532,7 +532,7 @@ const CategoryPage = () => {
                 const files = filesRes.data.files || [];
 
                 const unclassified = files.filter(
-                  (f) => f.is_transform === 2 && f.is_classification === 2 && f.category === null
+                  (f) => f.is_transform === 2 && f.is_classification === 2 && f.category == null
                 );
 
                 if (unclassified.length === 0) {
@@ -804,14 +804,14 @@ const CategoryPage = () => {
                     </span>
 
                     <div className="file-actions">
-                      {file.file_type?.toLowerCase() === "zip" && (
+                      {file.file_type?.toLowerCase() === "zip" ? (
+                        // 🔹 ZIP 파일: 압축 해제 버튼
                         <button
                           className={`unzip-btn ${file.is_classification === 4 ? "disabled" : ""}`}
                           disabled={file.is_classification === 4}
                           onClick={async () => {
                             if (file.is_classification === 4) return;
                             try {
-                              // 로딩 Toast
                               const loadingToast = Swal.mixin({
                                 toast: true,
                                 position: "top",
@@ -870,8 +870,47 @@ const CategoryPage = () => {
                         >
                           {file.is_classification === 4 ? "해제 완료" : "압축해제"}
                         </button>
-                      )}
+                      ) : (
+                        // 🔹 ZIP이 아닐 경우 상태 표시
+                        (() => {
+                          const supported = [
+                            "pdf", "hwp", "docx", "pptx", "xlsx",
+                            "jpg", "jpeg", "png", "txt"
+                          ];
+                          const ext = file.file_type?.toLowerCase();
 
+                          let label = "";
+                          let statusClass = "";
+
+                          if (!supported.includes(ext)) {
+                            label = "미지원";
+                            statusClass = "unsupported";
+                          } else if (file.is_transform === 0) {
+                            label = "대기 중";
+                            statusClass = "wait";
+                          } else if (file.is_transform === 1) {
+                            label = "추출 중";
+                            statusClass = "extract";
+                          } else if (file.is_transform === 2) {
+                            if (file.is_classification === 0) {
+                              label = "분류 대기 중";
+                              statusClass = "ready";
+                            } else if (file.is_classification === 1) {
+                              label = "분류 중";
+                              statusClass = "classifying";
+                            } else if (file.is_classification === 2) {
+                              label = "분류 실패";
+                              statusClass = "fail";
+                            }
+                          }
+
+                          return (
+                            <span className={`status-label status-${statusClass}`}>
+                              {label}
+                            </span>
+                          );
+                        })()
+                      )}
 
                       <button 
                         className="download-btn"
