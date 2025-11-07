@@ -25,7 +25,10 @@ function MainPage() {
     <div className="main-wrapper">
       <section className="main-container">
         <div className="main-content">
-          <h1 className="project-title">사이트이름 정해야해요</h1>
+          <h1 className="project-title">
+            <strong>Sortify AI</strong>
+            <br /><small>AI가 문서를 자동으로 분류하다</small>
+          </h1>
 
           <div className="main-box">
             <p className="main-subtext">

@@ -16,14 +16,23 @@
 
 /* 사이트 이름 */
 .site-title .site-link {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #2563eb;
+  font-size: 1.95rem; /* 기존보다 조금 키움 */
+  font-weight: 800; /* 훨씬 두껍게 */
+  color: #007bff; /* 더 깊은 블루 */
   text-decoration: none;
+  letter-spacing: -0.3px; /* 글자 간격 살짝 줄이기 */
+  font-family: "Pretendard", "Noto Sans KR", sans-serif;
+  position: relative;
+  transition: all 0.3s ease;
 }
+
+/* 호버 시 약간의 강조 효과 */
 .site-title .site-link:hover {
-  color: #1d4ed8;
+  color: #1e40af;
+  text-shadow: 0 0 10px rgba(37, 99, 235, 0.2);
+  transform: scale(1.03);
 }
+
 
 /* 버튼 그룹 */
 .nav-buttons {

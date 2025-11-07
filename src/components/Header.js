@@ -34,7 +34,7 @@ const Header = ({ isLoggedIn, setIsLoggedIn }) => {
     <header className="navbar">
       <h1 className="site-title">
         <Link to="/" className="site-link">
-          사이트이름 도대체 뭘로
+          Sortify AI
         </Link>
       </h1>
 
