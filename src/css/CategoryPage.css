@@ -651,3 +651,21 @@
   background: #f5c6cb;
   color: #721c24;
 }
+
+.retry-btn {
+  background: #f0f3ff;
+  border: 1px solid #ccd5ff;
+  color: #1a2b7a;
+  font-size: 13px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-left: 8px;
+  transition: all 0.2s;
+}
+.retry-btn:hover {
+  background: #e0e7ff;
+}
+.retry-btn:active {
+  background: #c7d2fe;
+}
